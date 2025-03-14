@@ -31,7 +31,7 @@ const LandingPage: React.FC = () => {
       <Box
         sx={{
           width: "100%",
-          height: "70vh",
+          height: "65vh",
           backgroundImage: `url(${heroImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -45,7 +45,7 @@ const LandingPage: React.FC = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          textAlign: "center", // Ensures text is centered
+          textAlign: "center",
         }}
       >
         <Typography
@@ -54,13 +54,12 @@ const LandingPage: React.FC = () => {
             color: "white",
             fontWeight: "bold",
             textTransform: "uppercase",
-            fontSize: "2rem", // Adjust size as needed
+            fontSize: "2rem",
           }}
         >
-          Request Our Help Today
+          Connect with us Today
         </Typography>
       </Box>
-      {/* Buttons BELOW the image */}
       <Box
         sx={{
           width: "100%", // Full screen width
@@ -71,7 +70,7 @@ const LandingPage: React.FC = () => {
           alignItems: "center",
           px: 0,
           py: 2, // Adds spacing above & below buttons
-          paddingBottom: 12
+          paddingBottom: 10
         }}
       >
         <Button
@@ -82,8 +81,8 @@ const LandingPage: React.FC = () => {
           smooth={true}
           onClick={() => handleButtonClick("lease")}
           sx={{
-            backgroundColor: "white",
-            color: "black",
+            backgroundColor: "#323435",
+            color: "white",
             fontSize: "1.2rem",
             px: 4,
             py: 1.5,
@@ -91,7 +90,9 @@ const LandingPage: React.FC = () => {
             
             textTransform: "none",
             "&:hover": {
-              opacity: 0.8,
+              color:"black",
+              backgroundColor:"white",
+              // opacity: .75,
             },
           }}
         >
@@ -116,14 +117,16 @@ const LandingPage: React.FC = () => {
           onClick={() => handleButtonClick("sell")}
           sx={{
             backgroundColor: "white",
-            color: "black",
+            color: "#323435",
             fontSize: "1.2rem",
             px: 4,
             py: 1.5,
             borderRadius: "30px",
             textTransform: "none",
             "&:hover": {
-              opacity: 0.8,
+              // opacity: .75,
+              backgroundColor: "#323435",
+              color: "white"
             },
           }}
         >
@@ -142,8 +145,8 @@ const LandingPage: React.FC = () => {
       backgroundColor: "white",
       borderRadius: "32px",
       boxShadow: "8px 8px 16px rgba(0, 0, 0, 0.2)",
-      padding: 2,
-      marginTop: 4,
+      padding: 5,
+      marginTop: 15,
     }}
   >
         <ToggleSwitch checked={isChecked} onChange={handleFormChange}/>

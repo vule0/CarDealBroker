@@ -3,7 +3,6 @@ import {
   AppBar,
   Toolbar,
   Typography,
-  Button,
   Box,
   useTheme,
 } from "@mui/material";

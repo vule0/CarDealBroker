@@ -16,7 +16,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange }) => {
             name="color_mode"
             id="color_mode"
             checked={checked}
-            onChange={onChange} // Passes the state change handler up
+            onChange={onChange} 
           />
           <label
             htmlFor="color_mode"
