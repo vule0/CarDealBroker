@@ -1,0 +1,88 @@
+div.btn-container {
+    vertical-align: middle;
+    text-align: center;
+    justify-content: center;
+    padding-bottom: 20px;
+}
+
+label {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.btn-color-mode-switch {
+    display: inline-block;
+    margin: 0px;
+    position: relative;
+}
+
+.btn-color-mode-switch > label.btn-color-mode-switch-inner {
+    margin: 0px;
+    width: 240px;
+    height: 40px;
+    background: #E0E0E0;
+    border-radius: 26px;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.btn-color-mode-switch > label.btn-color-mode-switch-inner:before {
+    content: attr(data-on);
+    position: absolute;
+    font-size: 16px;
+    font-weight: 500;
+    top: 50%; /* Vertically center the "on" text */
+    right: 20px;
+    text-align: center;
+    width: 100px;
+    transform: translateY(-50%); /* Adjust for proper vertical centering */
+}
+
+.btn-color-mode-switch > label.btn-color-mode-switch-inner:after {
+    font-size: 16px;
+    content: attr(data-off);
+    width: 120px;
+    height: 36px;
+    background: #fff;
+    border-radius: 26px;
+    position: absolute;
+    left: 2px;
+    top: 50%; /* Vertically center the "off" text */
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0px 0px 6px -2px #111;
+    line-height: 36px;
+    padding: 0;
+    transform: translateY(-50%); /* Adjust for proper vertical centering */
+}
+
+.btn-color-mode-switch input[type="checkbox"] {
+    cursor: pointer;
+    width: 120px;
+    height: 40px;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    z-index: 1;
+    margin: 0px;
+}
+
+.btn-color-mode-switch input[type="checkbox"]:checked + label.btn-color-mode-switch-inner {
+    background: #7cc4e3;
+}
+
+.btn-color-mode-switch input[type="checkbox"]:checked + label.btn-color-mode-switch-inner:after {
+    content: attr(data-on);
+    left: 118px;
+    background: #A5D3E7;
+}
+
+.btn-color-mode-switch input[type="checkbox"]:checked + label.btn-color-mode-switch-inner:before {
+    content: attr(data-off);
+    right: auto;
+    left: 20px;
+    text-align: center; /* horizontally center the off text when on */
+    width: 100px;
+}
