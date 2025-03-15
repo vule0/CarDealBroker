@@ -24,10 +24,11 @@ const Footer: React.FC = () => {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "5px", 
+        paddingTop: "10px",
+        paddingBottom: "15px", 
         backgroundColor: "#323435",
         color: "white",
-        position: "fixed",
+        // position: "fixed",
         bottom: 0,
         width: "100%",
       }}
@@ -57,12 +58,12 @@ const Footer: React.FC = () => {
           target="_blank"
           color="inherit"
         >
-          <Instagram />
+          <Instagram/>
         </IconButton>
     
         <IconButton
           component={Link}
-          href="https://tiktok.com/thecardealbroker"
+          href="https://tiktok.com/@cardealbroker"
           target="_blank"
           color="inherit"
         >

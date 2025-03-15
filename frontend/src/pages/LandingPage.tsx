@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import { Box, Button, Container, Typography } from "@mui/material";
+import { Box, Button, Container, Typography, useMediaQuery, useTheme } from "@mui/material";
 // import { Link } from "react-router-dom";
 import { Link } from "react-scroll";
 import ToggleSwitch from "../components/ToggleSwitch";
@@ -9,6 +9,8 @@ import LeaseOrSell from "../components/LeaseOrSell";
 import Header from '../components/Header'
 
 const LandingPage: React.FC = () => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     const [selectedForm, setSelectedForm] = useState<"lease" | "sell" | null>("lease");
     const [isChecked, setIsChecked] = useState(false);
@@ -27,11 +29,10 @@ const LandingPage: React.FC = () => {
   return (
     <Box id= "hero-section" sx={{ width: "100%", textAlign: "center" }}>
       <Header onFormSelect={handleButtonClick}/>
-      {/* Hero Image */}
       <Box
         sx={{
           width: "100%",
-          height: "65vh",
+          height: isMobile ? "50vh" : "65vh",
           backgroundImage: `url(${heroImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -46,6 +47,7 @@ const LandingPage: React.FC = () => {
           justifyContent: "center",
           alignItems: "center",
           textAlign: "center",
+    
         }}
       >
         <Typography
@@ -54,7 +56,7 @@ const LandingPage: React.FC = () => {
             color: "white",
             fontWeight: "bold",
             textTransform: "uppercase",
-            fontSize: "2rem",
+            fontSize: isMobile ? "1.5rem" : "2rem",
           }}
         >
           Connect with us Today
@@ -65,11 +67,12 @@ const LandingPage: React.FC = () => {
           width: "100%", // Full screen width
           backgroundColor: "#1dacf0",
           display: "flex",
+          flexDirection: isMobile ? "column" : "row",
           gap: 3,
           justifyContent: "center",
           alignItems: "center",
           px: 0,
-          py: 2, // Adds spacing above & below buttons
+          py: 2,
           paddingBottom: 10
         }}
       >
@@ -84,10 +87,10 @@ const LandingPage: React.FC = () => {
             backgroundColor: "#323435",
             color: "white",
             fontSize: "1.2rem",
-            px: 4,
+            px: isMobile ? 2 : 4,
             py: 1.5,
             borderRadius: "30px",
-            
+            border: "none",
             textTransform: "none",
             "&:hover": {
               color:"black",
@@ -119,9 +122,10 @@ const LandingPage: React.FC = () => {
             backgroundColor: "white",
             color: "#323435",
             fontSize: "1.2rem",
-            px: 4,
+            px: isMobile ? 2 : 4,
             py: 1.5,
             borderRadius: "30px",
+            border: "none",
             textTransform: "none",
             "&:hover": {
               // opacity: .75,
@@ -134,11 +138,10 @@ const LandingPage: React.FC = () => {
         </Button>
       </Box>
 
-      <Container>
+      <Container id="about-component">
         <AboutComponent />
       </Container>
 
-      {/* Toggle Switch BELOW the buttons */}
       <Container id="lease-sell-form" sx={{ marginBottom: "150px" }}>
       <Box
     sx={{

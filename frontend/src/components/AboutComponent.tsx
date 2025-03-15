@@ -6,7 +6,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 const AboutComponent: React.FC = () => {
 
   return (
-    <Container id="about-component" sx={{ mt: 5, mb: 10, borderRadius: 2,}}>
+    <Container sx={{ mt: 5, mb: 10, borderRadius: 2,}}>
       <Box
         sx={{
           display: "flex",

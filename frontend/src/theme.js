@@ -18,6 +18,33 @@ const theme = createTheme({
       secondary: '#555555',
     },
   },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          margin: '2rem',
+          textAlign: 'center',
+          border: 'none',
+          padding: '.75rem 3rem',
+          backgroundColor: '#7cc4e3',
+          border: '1px #7cc4e3 solid',
+          borderRadius: '5px',
+          color: 'white',
+          fontSize: '17px',
+          fontWeight: 500,
+          fontFamily: "'Montserrat', sans-serif",
+          '&:hover': {
+            // opacity: 0.7,
+            transform: 'scale(1.05)',
+              transition: 'transform 0.3s ease-in-out',
+          },
+          '&:active': {
+            // opacity: 0.9,
+          },
+        },
+      },
+    },
+  },
 });
 
 export default theme;

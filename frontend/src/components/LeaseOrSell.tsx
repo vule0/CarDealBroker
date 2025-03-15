@@ -19,7 +19,6 @@ import {
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import Confetti from "react-confetti";
 import axios from "axios";
-import "./LeaseOrSell.css";
 
 
 interface LeaseOrSellProps {
@@ -389,8 +388,8 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
           </Grid>
         </>
       )}
-      <Box className="submit-button">
-        <Button variant="contained" type="submit">
+      <Box>
+        <Button type="submit">
           Contact Me!
         </Button>
       </Box>
