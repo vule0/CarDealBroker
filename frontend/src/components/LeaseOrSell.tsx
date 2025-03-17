@@ -11,13 +11,10 @@ import {
   FormControl,
   Autocomplete,
   Grid,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import Confetti from "react-confetti";
 import axios from "axios";
 
 
@@ -43,7 +40,6 @@ interface FormData {
   majorDamage: boolean;
 }
 
-// Explicitly type carData
 const carData: Record<string, string[]> = {
   "Acura": ["ILX", "MDX", "RDX", "TLX"],
   "Alfa Romeo": ["Giulia", "Stelvio"],
@@ -109,13 +105,20 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
     majorDamage: false,
   });
 
-  // State to handle selected make and available models
   const [selectedMake, setSelectedMake] = useState("");
   const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
-  const [open, setOpen] = useState(false);
-  const handleClose = () => {
-    setOpen(false);
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,6 +136,28 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
     }));
   };
 
+  const resetForm = () => {
+    setFormData({
+      formType: formType ? "Lease Form" : "Sell Form",
+      firstName: "",
+      lastName: "",
+      phoneNumber: "",
+      email: "",
+      vehicleMake: "",
+      vehicleModel: "",
+      zipCode: "",
+      milesPerYear: "",
+      creditScore: "",
+      vin: "",
+      miles: "",
+      payoff: "",
+      condition: "",
+      twoKeys: false,
+      majorDamage: false,
+    });
+    setSelectedMake("");
+    setAvailableModels([]);
+  };
 
   const submitForm = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,10 +167,21 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
         "http://localhost:8000/submit_form/",
         formData
       );
-      console.log(response.data);
-      setOpen(true); // Open the dialog on success
+      
+      setSnackbar({
+        open: true,
+        message: "Thank you for your submission! Our team will review your request and reach out to you shortly.",
+
+        severity: 'success'
+      });
+      resetForm();
     } catch (error) {
       console.error("Error submitting form:", error);
+      setSnackbar({
+        open: true,
+        message: "There was an error submitting your form. Please try again later.",
+        severity: 'error'
+      });
     }
   };
 
@@ -222,6 +258,7 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <Autocomplete
+                  freeSolo
                   options={Object.keys(carData)}
                   value={selectedMake}
                   onChange={(event, newValue) => {
@@ -248,6 +285,7 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <Autocomplete
+                  freeSolo
                   options={availableModels}
                   value={formData.vehicleModel}
                   disabled={!selectedMake}
@@ -343,7 +381,7 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
           </Grid>
 
           <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={8}>
               <Typography variant="body1" gutterBottom align="left">
                 Condition (1-10)
               </Typography>
@@ -358,7 +396,7 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
               />
             </Grid>
 
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={4}>
               <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
                 <FormControlLabel
                   control={
@@ -394,19 +432,16 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
         </Button>
       </Box>
 
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle></DialogTitle>
-        <DialogContent>
-          <Typography>Thank you for your submission!<br />
-      Our team will review your request and reach out to you shortly.
-          </Typography>
-        </DialogContent>
-        <DialogActions><Box className="">
-          <Button variant="contained" onClick={handleClose} >
-            Close
-          </Button></Box>
-        </DialogActions>
-      </Dialog>
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={15000} 
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

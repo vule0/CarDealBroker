@@ -34,7 +34,7 @@ const Footer: React.FC = () => {
       }}
     >
       {/* Contact Info */}
-      <Box>
+      <Box sx={{ textAlign: "left" }}>
         <Typography variant="body1">
           <strong>Contact Info:</strong>
         </Typography>

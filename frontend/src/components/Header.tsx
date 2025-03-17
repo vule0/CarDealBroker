@@ -45,9 +45,7 @@ const Header: React.FC<HeaderProps> = ({ onFormSelect }) => {
             </Typography>
           </Box>
 
-          {/* Navigation Links */}
           <Box sx={{ display: isMobile ? "none" : "flex", alignItems: "center", flexGrow: 1 }}>
-            {/* <Button ></Button> */}
             <Link
               to="about-component"
               smooth={true}
@@ -56,8 +54,8 @@ const Header: React.FC<HeaderProps> = ({ onFormSelect }) => {
                 fontSize: "1rem",
                 padding: "0 16px",
                 color: "black",
-                // textDecoration: "none",
-                // textTransform: "none",
+                textDecoration: "none",
+                textTransform: "none",
                 cursor: "pointer",
                 '&hover': {
                 transform: 'scale(1.05)',
@@ -80,7 +78,7 @@ const Header: React.FC<HeaderProps> = ({ onFormSelect }) => {
               }}
               onClick={() => onFormSelect("lease")}
             >
-              Lease Your Car
+              Lease A Car
             </Link>
 
             <Link

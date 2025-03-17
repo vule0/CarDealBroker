@@ -3,10 +3,11 @@ import { Box, Button, Container, Typography, useMediaQuery, useTheme } from "@mu
 // import { Link } from "react-router-dom";
 import { Link } from "react-scroll";
 import ToggleSwitch from "../components/ToggleSwitch";
-import heroImage from "../assets/CarDealBrokerLogo.jpg"; // Replace with your image path
+import heroImage from "../assets/CarDealBrokerLogo.jpg";
 import AboutComponent from "../components/AboutComponent";
 import LeaseOrSell from "../components/LeaseOrSell";
 import Header from '../components/Header'
+import Footer from "../components/Footer";
 
 const LandingPage: React.FC = () => {
     const theme = useTheme();
@@ -18,12 +19,12 @@ const LandingPage: React.FC = () => {
     const handleFormChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const isChecked = event.target.checked;
         setIsChecked(isChecked);
-        setSelectedForm(isChecked ? "sell" : "lease"); // Switch form based on toggle
+        setSelectedForm(isChecked ? "sell" : "lease");
       };
 
       const handleButtonClick = (formType: "lease" | "sell") => {
         setSelectedForm(formType);
-        setIsChecked(formType === "sell"); // Set toggle based on selected form
+        setIsChecked(formType === "sell");
       };
 
   return (
@@ -161,6 +162,7 @@ const LandingPage: React.FC = () => {
         )}
         </Box>
       </Container>
+      <Footer/>
     </Box>
   );
 };

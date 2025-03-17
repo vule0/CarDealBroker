@@ -42,40 +42,44 @@ class EmailRequest(BaseModel):
     majorDamage: Optional[bool] = None
     
 def send_email_sendgrid(email_data: EmailRequest):
-    # Initialize SendGrid client with API key from environment variables
     sg = sendgrid.SendGridAPIClient(api_key=os.getenv("SENDGRID_API_KEY"))
     from_email = Email(os.getenv("SENDGRID_FROM_EMAIL"))
-    to_email = To("vule2003@yahoo.com")  # Change to the recipient's email address
-    subject = f"New {email_data.formType} Submission"
+    to_email = To(os.getenv("RECEIVER_EMAIL")) 
+    subject = f"New {email_data.formType} Submission - {email_data.firstName} {email_data.lastName}"
     
-    # Construct the email content
-    content = Content("text/plain", f"""
+    email_body = f"""
     Name: {email_data.firstName} {email_data.lastName}
     Email: {email_data.email}
     Phone: {email_data.phoneNumber}
     
     Form Type: {email_data.formType}
+    """
     
+    if email_data.formType.lower() == "lease form":
+        email_body += f"""
     Vehicle Make: {email_data.vehicleMake}
     Vehicle Model: {email_data.vehicleModel}
     Zip Code: {email_data.zipCode}
     Miles per Year: {email_data.milesPerYear}
     Credit Score: {email_data.creditScore}
-    
+    """
+
+    if email_data.formType.lower() == "sell form":
+        email_body += f"""
     VIN: {email_data.vin}
     Miles: {email_data.miles}
     Payoff Amount: {email_data.payoff}
     Condition: {email_data.condition}
-    
     Two Keys: {'Yes' if email_data.twoKeys else 'No'}
     Major Damage: {'Yes' if email_data.majorDamage else 'No'}
-    """)
+    """
     
-    # Create the mail object
+    content = Content("text/plain", email_body)
+
     mail = Mail(from_email, to_email, subject, content)
 
     try:
-        # Send the email using SendGrid
+
         response = sg.send(mail)
         print(f"Email sent with status code {response.status_code}")
     except Exception as e:
