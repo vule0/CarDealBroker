@@ -17,7 +17,8 @@ origins = [
     'http://localhost:3000',
     'http://localhost:5173',
     'https://cardealbroker.netlify.app',
-    'https://cardealbroker.com'
+    'https://cardealbroker.com',
+    'https://www.cardealbroker.com',
     ]
 app.add_middleware(
     CORSMiddleware,
