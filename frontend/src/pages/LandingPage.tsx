@@ -73,7 +73,7 @@ const LandingPage: React.FC = () => {
           justifyContent: "center",
           alignItems: "center",
           px: 0,
-          py: 2,
+          py: 3,
           paddingBottom: 10
         }}
       >
