@@ -18,6 +18,8 @@ origins = [
     'https://cardealbroker.netlify.app',
     'https://cardealbroker.com',
     'https://www.cardealbroker.com',
+    'https://api.cardealbroker.com',
+    'https://8jjm75j2.up.railway.app',
     ]
 app.add_middleware(
     CORSMiddleware,
@@ -103,6 +105,10 @@ def send_email_sendgrid(email_data: EmailRequest):
     except Exception as e:
         print(f"Error sending email: {e}")
         return False
+
+@app.get("/")
+async def root():
+    return {"message": "CarDealBroker API is running", "cors_origins": origins}
 
 @app.post("/submit_form/", response_model=SuccessResponse, responses={
     200: {"model": SuccessResponse},
