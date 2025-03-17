@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box,
   TextField,
@@ -163,11 +163,10 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
+      await axios.post(
         "http://localhost:8000/submit_form/",
         formData
       );
-      
       setSnackbar({
         open: true,
         message: "Thank you for your submission! Our team will review your request and reach out to you shortly.",

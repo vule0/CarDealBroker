@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   AppBar,
   Toolbar,
@@ -57,9 +57,6 @@ const Header: React.FC<HeaderProps> = ({ onFormSelect }) => {
                 textDecoration: "none",
                 textTransform: "none",
                 cursor: "pointer",
-                '&hover': {
-                transform: 'scale(1.05)',
-              transition: 'transform 0.3s ease-in-out'},
               }}
             >
               About Us

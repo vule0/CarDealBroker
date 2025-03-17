@@ -23,7 +23,6 @@ const theme = createTheme({
         root: {
           margin: '2rem',
           textAlign: 'center',
-          border: 'none',
           padding: '.75rem 3rem',
           backgroundColor: '#7cc4e3',
           border: '1px #7cc4e3 solid',

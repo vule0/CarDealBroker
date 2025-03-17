@@ -1,6 +1,6 @@
 # import uvicorn
 import os
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import sendgrid
@@ -40,6 +40,16 @@ class EmailRequest(BaseModel):
     condition: str
     twoKeys: Optional[bool] = None
     majorDamage: Optional[bool] = None
+
+class SuccessResponse(BaseModel):
+    status: str = "success"
+    message: str
+    data: Optional[dict] = None
+
+class ErrorResponse(BaseModel):
+    status: str = "error"
+    message: str
+    error: Optional[str] = None
     
 def send_email_sendgrid(email_data: EmailRequest):
     sg = sendgrid.SendGridAPIClient(api_key=os.getenv("SENDGRID_API_KEY"))
@@ -79,15 +89,35 @@ def send_email_sendgrid(email_data: EmailRequest):
     mail = Mail(from_email, to_email, subject, content)
 
     try:
-
         response = sg.send(mail)
-        print(f"Email sent with status code {response.status_code}")
+        if response.status_code == 202:
+            print(f"Email sent successfully with status code {response.status_code}")
+            return True
+        else:
+            print(f"Failed to send email with status code {response.status_code}")
+            return False
     except Exception as e:
         print(f"Error sending email: {e}")
-        raise Exception("Failed to send email")
+        return False
 
-@app.post("/submit_form/")
+@app.post("/submit_form/", response_model=SuccessResponse, responses={
+    200: {"model": SuccessResponse},
+    400: {"model": ErrorResponse},
+    500: {"model": ErrorResponse}
+})
 async def submit_form(email_data: EmailRequest, background_tasks: BackgroundTasks):
-    print(email_data)
-    background_tasks.add_task(send_email_sendgrid, email_data)
-    return {"message": "Form submitted successfully. Email is being sent."}
+    try:
+
+        background_tasks.add_task(send_email_sendgrid, email_data)
+        
+        return SuccessResponse(
+            message="Form submitted successfully. Email is being sent.",
+            data={"formType": email_data.formType}
+        )
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"An unexpected error occurred: {str(e)}"
+        )
