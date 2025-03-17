@@ -65,11 +65,11 @@ const LandingPage: React.FC = () => {
       </Box>
       <Box
         sx={{
-          width: "100%", // Full screen width
+          width: "100%",
           backgroundColor: "#1dacf0",
           display: "flex",
           flexDirection: isMobile ? "column" : "row",
-          gap: 3,
+          gap: isMobile ? 0 : 3,
           justifyContent: "center",
           alignItems: "center",
           px: 0,
@@ -107,8 +107,9 @@ const LandingPage: React.FC = () => {
             color: "white",
             fontSize: "1.5rem",
             fontWeight: "light",
-            paddingTop: 1,
-            paddingBottom: 1,
+            paddingTop: 0,
+            paddingBottom: 0,
+            marginTop: 0,
           }}
         >
           or

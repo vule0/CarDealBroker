@@ -13,6 +13,8 @@ import {
   Grid,
   Snackbar,
   Alert,
+  CircularProgress,
+  Backdrop,
 } from "@mui/material";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import api from "../api.ts";
@@ -116,6 +118,7 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
     message: '',
     severity: 'success'
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCloseSnackbar = () => {
     setSnackbar(prev => ({ ...prev, open: false }));
@@ -161,6 +164,7 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
 
   const submitForm = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       await api.post(
@@ -180,6 +184,8 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
         message: "There was an error submitting your form. Please try again later.",
         severity: 'error'
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -197,8 +203,13 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
         overflowY: "auto", 
       }}
     >
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={isLoading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       
-    
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
           <TextField
@@ -425,8 +436,12 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
         </>
       )}
       <Box>
-        <Button type="submit">
-          Contact Me!
+        <Button 
+          type="submit" 
+          disabled={isLoading}
+          sx={{ minWidth: '120px' }}
+        >
+          {isLoading ? 'Submitting...' : 'Contact Me!'}
         </Button>
       </Box>
 
