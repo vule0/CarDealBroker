@@ -164,7 +164,7 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
 
     try {
       await axios.post(
-        "http://localhost:8000/submit_form/",
+        "https://3yrktgfq.up.railway.app/submit_form/",
         formData
       );
       setSnackbar({
