@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Typography, Container} from "@mui/material";
-import aboutImage from "../assets/samplepic.png"; // Replace with your actual image
+import aboutImage from "../assets/CarDealBrokerLogoSmall.jpg"; // Replace with your actual image
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const AboutComponent: React.FC = () => {
@@ -68,7 +68,7 @@ const AboutComponent: React.FC = () => {
         </Box>
 
         {/* Right Side: Image */}
-        <Box
+        {/* <Box
           sx={{
             flex: 0.75,
             display: "flex",
@@ -91,7 +91,7 @@ const AboutComponent: React.FC = () => {
               boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
             }}
           />
-        </Box>
+        </Box> */}
       </Box>
     </Container>
   );
