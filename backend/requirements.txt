@@ -1,3 +1,4 @@
 fastapi
 pydantic
 uvicorn
+sendgrid==6.11.0
