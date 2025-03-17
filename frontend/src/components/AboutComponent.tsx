@@ -1,6 +1,6 @@
 import React from "react";
-import { Box, Typography, Container, Paper } from "@mui/material";
-import aboutImage from "../assets/CarDealBrokerLogoSmall.jpg";
+import { Box, Typography, Container} from "@mui/material";
+// import aboutImage from "../assets/CarDealBrokerLogoSmall.jpg";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const AboutComponent: React.FC = () => {
