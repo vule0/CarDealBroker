@@ -50,6 +50,10 @@ const Footer: React.FC = () => {
         </Typography>
       </Box>
 
+      <Typography variant="body2" sx={{ textAlign: "center" }}>
+        Copyright © 2025 cardealbroker.com - All Rights Reserved.
+      </Typography>
+
       {/* Social Media Links */}
       <Box sx={{ display: "flex", gap: 1, paddingRight: "15px"}}>
         <IconButton
@@ -69,7 +73,9 @@ const Footer: React.FC = () => {
         >
           <TikTokIcon size={30} />
         </IconButton>
+        
       </Box>
+      
     </Box>
   );
 };
