@@ -129,7 +129,7 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
     }));
   };
 
-  const handleSliderChange = (event: Event, newValue: number | number[]) => {
+  const handleSliderChange = (_event: Event, newValue: number | number[]) => {
     setFormData((prevData: FormData) => ({
       ...prevData,
       condition: newValue.toString(),
@@ -260,7 +260,7 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
                   freeSolo
                   options={Object.keys(carData)}
                   value={selectedMake}
-                  onChange={(event, newValue) => {
+                  onChange={(_event, newValue) => {
                     const make = newValue || "";
                     setSelectedMake(make);
                     setAvailableModels(carData[make] || []);
@@ -288,7 +288,7 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
                   options={availableModels}
                   value={formData.vehicleModel}
                   disabled={!selectedMake}
-                  onChange={(event, newValue) => {
+                  onChange={(_event, newValue) => {
                     setFormData((prevData) => ({ ...prevData, vehicleModel: newValue || "" }));
                   }}
                   renderInput={(params) => <TextField {...params} label="Vehicle Model" required />}
