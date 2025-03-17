@@ -15,7 +15,7 @@ import {
   Alert,
 } from "@mui/material";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import axios from "axios";
+import api from "../api.ts";
 
 
 interface LeaseOrSellProps {
@@ -163,14 +163,13 @@ const LeaseOrSell: React.FC<LeaseOrSellProps> = ({ formType }) => {
     e.preventDefault();
 
     try {
-      await axios.post(
-        "https://3yrktgfq.up.railway.app/submit_form/",
+      await api.post(
+        "/submit_form/",
         formData
       );
       setSnackbar({
         open: true,
         message: "Thank you for your submission! Our team will review your request and reach out to you shortly.",
-
         severity: 'success'
       });
       resetForm();
