@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: "https://cardealbroker.com",
+  baseURL: "ocgdydfc.up.railway.app",
   withCredentials: false,
   headers: {
     'Content-Type': 'application/json',

@@ -13,7 +13,6 @@ load_dotenv()
 app = FastAPI()
 
 origins = [
-    'https://3yrktgfq.up.railway.app',
     'http://localhost:3000',
     'http://localhost:5173',
     'https://cardealbroker.netlify.app',
