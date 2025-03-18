@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Typography, Link, IconButton } from "@mui/material";
 import {Instagram} from "@mui/icons-material";
+import CarDealBrokerWhiteSmall from "../assets/CarDealBrokerWhiteSmall.jpg";
 
 // Custom TikTok Icon
 const TikTokIcon = ({ color = "#FFFFFF", size = 30 }) => {
@@ -22,19 +23,20 @@ const Footer: React.FC = () => {
     <Box
       sx={{
         display: "flex",
+        flexDirection: { xs: "column", md: "row" },
         justifyContent: "space-between",
         alignItems: "center",
         paddingTop: "10px",
         paddingBottom: "15px", 
         backgroundColor: "#323435",
         color: "white",
-        // position: "fixed",
         bottom: 0,
         width: "100%",
+        gap: { xs: 2, md: 0 }
       }}
     >
-      {/* Contact Info */}
-      <Box sx={{ textAlign: "left" }}>
+      {/* Contact Info on the left */}
+      <Box sx={{ textAlign: { xs: "center", md: "left" }, order: { xs: 2, md: 1 }, pl: { xs: 0, md: 3 } }}>
         <Typography variant="body1">
           <strong>Contact Info:</strong>
         </Typography>
@@ -48,34 +50,57 @@ const Footer: React.FC = () => {
             Phone: +1 (954) 695-7069
           </Link>
         </Typography>
+        {/* <Typography variant="body2" sx={{ mt: 1 }}>
+          Copyright © 2025 cardealbroker.com - All Rights Reserved.
+        </Typography> */}
       </Box>
-<Box sx={{ display: "flex", gap: 1, paddingRight: "15px"}}>
-        <IconButton
-          component={Link}
-          href="https://instagram.com/thecardealbroker"
-          target="_blank"
-          color="inherit"
-        >
-          <Instagram/>
-        </IconButton>
-    
-        <IconButton
-          component={Link}
-          href="https://tiktok.com/@cardealbroker"
-          target="_blank"
-          color="inherit"
-        >
-          <TikTokIcon size={30} />
-        </IconButton>
+
+      {/* Logo in the center */}
+      <Box sx={{ 
+        display: "flex", 
+        flexDirection: "column", 
+        alignItems: "center", 
+        order: { xs: 1, md: 2 },
+        mx: "auto"
+      }}>
+        <Box
+          component="img"
+          src={CarDealBrokerWhiteSmall}
+          alt="Car Deal Broker Logo"
+          sx={{
+            maxWidth: "250px",
+            height: "auto",
+            mb: 1
+          }}
+        />
         
       </Box>
-      <Typography variant="body2" sx={{ textAlign: "center" }}>
-        Copyright © 2025 cardealbroker.com - All Rights Reserved.
-      </Typography>
-
-      {/* Social Media Links */}
       
+      {/* Right side - Reserved text */}
+      <Box sx={{ textAlign: { xs: "center", md: "right" }, order: { xs: 3, md: 3 }, pr: { xs: 0, md: 3 } }}>
+      <IconButton
+            component={Link}
+            href="https://instagram.com/thecardealbroker"
+            target="_blank"
+            color="inherit"
+            size="small"
+          >
+            <Instagram/>
+          </IconButton>
       
+          <IconButton
+            component={Link}
+            href="https://tiktok.com/@cardealbroker"
+            target="_blank"
+            color="inherit"
+            size="small"
+          >
+            <TikTokIcon size={24} />
+          </IconButton>
+          <Typography variant="body2" sx={{ mt: 1 }}>
+          Copyright © 2025 cardealbroker.com - All Rights Reserved.
+        </Typography>
+      </Box>
     </Box>
   );
 };

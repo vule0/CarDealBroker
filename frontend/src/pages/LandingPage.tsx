@@ -1,7 +1,7 @@
-import React, {useState, Dispatch, SetStateAction} from "react";
+import React, {useState, Dispatch, SetStateAction, useEffect} from "react";
 import { Box, Button, Container, Typography, useMediaQuery, useTheme } from "@mui/material";
-// import { Link } from "react-router-dom";
 import { Link } from "react-scroll";
+import { useLocation } from "react-router-dom";
 import ToggleSwitch from "../components/ToggleSwitch";
 import heroImage from "../assets/CarDealBrokerLogo.jpg";
 import AboutComponent from "../components/AboutComponent";
@@ -18,10 +18,26 @@ const LandingPage: React.FC<LandingPageProps> = ({
 }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const location = useLocation();
     
     const [localSelectedForm, setLocalSelectedForm] = useState<"consultation" | "lease" | "sell">(propSelectedForm);
     
+    useEffect(() => {
+      if (location.state && location.state.selectedForm) {
+        const stateFormType = location.state.selectedForm;
+        
+        if (stateFormType === 'consultation' || stateFormType === 'lease' || stateFormType === 'sell') {
+          if (propSetSelectedForm) {
+            propSetSelectedForm(stateFormType);
+          } else {
+            setLocalSelectedForm(stateFormType);
+          }
+        }
+      }
+    }, [location, propSetSelectedForm]);
+    
     const currentSelectedForm = propSelectedForm || localSelectedForm;
+    
     const setCurrentSelectedForm = (value: "consultation" | "lease" | "sell") => {
       if (propSetSelectedForm) {
         propSetSelectedForm(value);
@@ -108,7 +124,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
             },
           }}
         >
-          Get a Consultation
+          Get A Consultation
         </Button>
         
         <Button

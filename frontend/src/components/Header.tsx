@@ -33,6 +33,7 @@ const Header: React.FC<HeaderProps> = ({ onFormSelect }) => {
                   to="hero-section"
                   smooth={true}
                   className="text-decoration-none text-primary"
+                  
                 >
                   <img
                     src={logo}
@@ -131,7 +132,13 @@ const Header: React.FC<HeaderProps> = ({ onFormSelect }) => {
             ) : (
               <>
                 <RouterLink
-                  to="/#lease-sell-form"
+                  // to="/#lease-sell-form"
+                  to={{
+                    pathname: "/",
+                    hash: "lease-sell-form"
+                  }}
+        
+                  state={{ selectedForm: "lease" }}
                   onClick={() => onFormSelect("lease")}
                   style={{
                     fontSize: "1rem",
@@ -145,7 +152,14 @@ const Header: React.FC<HeaderProps> = ({ onFormSelect }) => {
                 </RouterLink>
 
                 <RouterLink
-                  to="/#lease-sell-form"
+                
+                
+                to={{
+                  pathname: "/",
+                  hash: "lease-sell-form"
+                }}
+      
+                state={{ selectedForm: "sell" }}
                   onClick={() => onFormSelect("sell")}
                   style={{
                     fontSize: "1rem",

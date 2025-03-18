@@ -24,6 +24,7 @@ import {
   Snackbar,
   Collapse
 } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import DealCard from "../components/DealCard.tsx";
 import { Deal, sampleDeals } from "../types/deals";
 import CloseIcon from '@mui/icons-material/Close';
@@ -378,8 +379,12 @@ const DealsPage: React.FC = () => {
           <Button 
             variant="contained" 
             size="large"
-            component="a"
-            href="/#lease-sell-form"
+            component={RouterLink}
+            to={{
+              pathname: "/",
+              hash: "lease-sell-form"
+            }}
+            state={{ selectedForm: "consultation" }}
             sx={{ 
               px: 4,
               py: 1.5,
