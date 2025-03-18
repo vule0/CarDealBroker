@@ -1,3 +1,6 @@
+import image1 from "../assets/deals/teslamodel3.webp";
+
+
 export interface Deal {
   id: number;
   make: string;
@@ -21,7 +24,7 @@ export const sampleDeals: Deal[] = [
     make: "Tesla",
     model: "Model 3",
     year: 2023,
-    image: "../../dist/images/deals/teslamodel3.webp",
+    image: image1,
     leasePrice: 499,
     term: 36,
     downPayment: 3000,

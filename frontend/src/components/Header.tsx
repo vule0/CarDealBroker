@@ -82,7 +82,11 @@ const Header: React.FC<HeaderProps> = ({ onFormSelect }) => {
               </Link>
             ) : (
               <RouterLink
-                to="/#about-component"
+            to={{
+              pathname: "/",
+              hash: "about-component"
+            }}
+                // to="/#about-component"
                 style={{
                   fontSize: "1rem",
                   padding: "0 16px",
