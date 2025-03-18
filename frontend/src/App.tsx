@@ -7,7 +7,7 @@ import DealsPage from './pages/DealsPage';
 import DemosPage from './pages/DemosPage';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import ScrollToTop from './components/ScrollToTop';
+// import ScrollToTop from './components/ScrollToTop';
 import { useState } from 'react';
 import { Box } from '@mui/material';
 
