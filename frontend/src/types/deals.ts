@@ -1,4 +1,9 @@
 import image1 from "../assets/deals/teslamodel3.webp";
+import image2 from "../assets/deals/2024 bmw xdrive m60i.png"
+import image3 from "../assets/deals/accord_hybrid.png"
+import image4 from "../assets/deals/2024-mercedes-benz-gle.png"
+import image5 from "../assets/deals/2022-toyota-rav4-prime-xse.avif"
+import image6 from "../assets/deals/24-Audi-Q7.png"
 
 
 export interface Deal {
@@ -39,7 +44,7 @@ export const sampleDeals: Deal[] = [
     make: "BMW",
     model: "X5",
     year: 2024,
-    image: "../../dist/images/deals/2024 bmw xdrive m60i.png",
+    image: image2,
     leasePrice: 699,
     term: 36,
     downPayment: 5000,
@@ -54,7 +59,7 @@ export const sampleDeals: Deal[] = [
     make: "Honda",
     model: "Accord Hybrid",
     year: 2023,
-    image: "../../dist/images/deals/accord_hybrid.png",
+    image: image3,
     leasePrice: 329,
     term: 36,
     downPayment: 2500,
@@ -69,7 +74,7 @@ export const sampleDeals: Deal[] = [
     make: "Mercedes-Benz",
     model: "GLE",
     year: 2024,
-    image: "../../dist/images/deals/2024-mercedes-benz-gle.png",
+    image: image4,
     leasePrice: 799,
     term: 36,
     downPayment: 6000,
@@ -84,7 +89,7 @@ export const sampleDeals: Deal[] = [
     make: "Toyota",
     model: "RAV4 Prime",
     year: 2023,
-    image: "../../dist/images/deals/2022-toyota-rav4-prime-xse.avif",
+    image: image5,
     leasePrice: 389,
     term: 36,
     downPayment: 3500,
@@ -99,7 +104,7 @@ export const sampleDeals: Deal[] = [
     make: "Audi",
     model: "Q7",
     year: 2024,
-    image: "../../dist/images/deals/24-Audi-Q7.png",
+    image: image6,
     leasePrice: 749,
     term: 36,
     downPayment: 5500,

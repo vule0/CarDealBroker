@@ -110,29 +110,34 @@ label {
   display: flex;
   background-color: #f0f0f0;
   border-radius: 30px;
-  padding: 8px;
+  padding: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   margin: 20px 0;
   width: 100%;
   max-width: 650px;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .toggle-btn {
   flex: 1;
-  padding: 14px 20px;
-  margin: 0 10px;
+  padding: 10px 8px;
+  margin: 0 4px;
   border: none;
   background: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #777;
   transition: all 0.3s ease;
   border-radius: 25px;
   position: relative;
   outline: none;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  min-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .toggle-btn.active {
@@ -146,6 +151,28 @@ label {
   background-color: #e0e0e0;
   color: #333;
   transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+  .triple-toggle {
+    padding: 2px;
+    margin: 10px 0;
+  }
+
+  .toggle-btn {
+    padding: 8px 4px;
+    margin: 0 2px;
+    font-size: 12px;
+    min-width: 80px;
+  }
+}
+
+@media (max-width: 400px) {
+  .toggle-btn {
+    font-size: 11px;
+    min-width: 70px;
+    padding: 6px 2px;
+  }
 }
 
 .switch {

@@ -25,21 +25,21 @@ import {
   Collapse
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import DealCard from "../components/DealCard.tsx";
-import { Deal, sampleDeals } from "../types/deals";
+import DemoCard from "../components/DemoCard";
+import { Demo, sampleDemos } from "../types/demos";
 import CloseIcon from '@mui/icons-material/Close';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
-// Extract all unique tags from sample deals
+// Extract all unique tags from sample demos
 const allTags = Array.from(
-  new Set(sampleDeals.flatMap(deal => deal.tags || []))
+  new Set(sampleDemos.flatMap(demo => demo.tags || []))
 ).sort();
 
-// Extract all unique makes from sample deals
+// Extract all unique makes from sample demos
 const allMakes = Array.from(
-  new Set(sampleDeals.map(deal => deal.make))
+  new Set(sampleDemos.map(demo => demo.make))
 ).sort();
 
 // Contact form initial state
@@ -57,8 +57,8 @@ const initialFormData: ContactFormData = {
   phone: ''
 };
 
-const DealsPage: React.FC = () => {
-  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+const DemosPage: React.FC = () => {
+  const [selectedDemo, setSelectedDemo] = useState<Demo | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
   const [formData, setFormData] = useState<ContactFormData>(initialFormData);
@@ -73,10 +73,10 @@ const DealsPage: React.FC = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   
   const minPrice = 0;
-  const maxPrice = Math.max(...sampleDeals.map(deal => deal.leasePrice)) + 100;
+  const maxPrice = Math.max(...sampleDemos.map(demo => demo.leasePrice)) + 100;
 
-  const handleDealClick = (deal: Deal) => {
-    setSelectedDeal(deal);
+  const handleDemoClick = (demo: Demo) => {
+    setSelectedDemo(demo);
     setDialogOpen(true);
     setShowContactForm(false);
     setFormData(initialFormData);
@@ -103,7 +103,7 @@ const DealsPage: React.FC = () => {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // In a real app, you would send the data to your backend here
-    console.log('Form submitted:', formData, 'Deal:', selectedDeal);
+    console.log('Form submitted:', formData, 'Demo:', selectedDemo);
     setFormSubmitted(true);
     setSnackbarOpen(true);
     
@@ -141,23 +141,23 @@ const DealsPage: React.FC = () => {
     setSelectedTags([]);
   };
 
-  // Filter deals based on selected filters
-  const filteredDeals = useMemo(() => {
-    return sampleDeals.filter(deal => {
+  // Filter demos based on selected filters
+  const filteredDemos = useMemo(() => {
+    return sampleDemos.filter(demo => {
       // Filter by vehicle make
-      if (selectedMake !== 'all' && deal.make !== selectedMake) {
+      if (selectedMake !== 'all' && demo.make !== selectedMake) {
         return false;
       }
       
       // Filter by price range
-      if (deal.leasePrice < priceRange[0] || deal.leasePrice > priceRange[1]) {
+      if (demo.leasePrice < priceRange[0] || demo.leasePrice > priceRange[1]) {
         return false;
       }
       
       // Filter by selected tags
       if (selectedTags.length > 0) {
-        const dealTags = deal.tags || [];
-        const hasSelectedTag = dealTags.some(tag => selectedTags.includes(tag));
+        const demoTags = demo.tags || [];
+        const hasSelectedTag = demoTags.some(tag => selectedTags.includes(tag));
         if (!hasSelectedTag) return false;
       }
       
@@ -169,7 +169,7 @@ const DealsPage: React.FC = () => {
     <Box sx={{ padding: 2, marginTop: 8 }}>
       <Container maxWidth="xl">
         <Typography variant="h2" component="h1" gutterBottom align="center" sx={{ fontWeight: 600, mb: 4 }}>
-          Featured Deals
+          Featured Demos
         </Typography>
         
         {/* Filters Section */}
@@ -197,7 +197,7 @@ const DealsPage: React.FC = () => {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <FilterAltIcon sx={{ mr: 1 }} />
               <Typography variant="h6" component="h2" sx={{ fontWeight: 500 }}>
-                Filter Deals
+                Filter Demos
               </Typography>
             </Box>
             <IconButton 
@@ -298,7 +298,7 @@ const DealsPage: React.FC = () => {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    {filteredDeals.length} {filteredDeals.length === 1 ? 'Deal' : 'Deals'} matching your filters
+                    {filteredDemos.length} {filteredDemos.length === 1 ? 'Demo' : 'Demos'} matching your filters
                   </Typography>
                 </Box>
                 <Button 
@@ -308,7 +308,6 @@ const DealsPage: React.FC = () => {
                     color: 'white',
                     backgroundColor: "red",
                     borderColor: '#1dacf0', 
-                    
                   }}
                 >
                   Reset Filters
@@ -321,41 +320,23 @@ const DealsPage: React.FC = () => {
         {/* Results count */}
         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h6">
-            {filteredDeals.length} {filteredDeals.length === 1 ? 'Deal' : 'Deals'} Found
+            {filteredDemos.length} {filteredDemos.length === 1 ? 'Demo' : 'Demos'} Found
           </Typography>
-          {/* {!filtersExpanded && (
-            <Button
-              startIcon={<FilterAltIcon />}
-              onClick={() => setFiltersExpanded(true)}
-              variant="outlined"
-              size="small"
-              sx={{ 
-                color: '#1dacf0',
-                borderColor: '#1dacf0', 
-                '&:hover': { 
-                  borderColor: '#1789c2',
-                  backgroundColor: 'rgba(29, 172, 240, 0.08)'
-                } 
-              }}
-            >
-              Show Filters
-            </Button>
-          )} */}
         </Box>
         
-        {/* Deals Grid */}
-        {filteredDeals.length > 0 ? (
+        {/* Demos Grid */}
+        {filteredDemos.length > 0 ? (
           <Grid container spacing={4}>
-            {filteredDeals.map((deal) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={deal.id}>
-                <DealCard deal={deal} onDealClick={handleDealClick} />
+            {filteredDemos.map((demo) => (
+              <Grid item xs={12} sm={6} md={4} lg={3} key={demo.id}>
+                <DemoCard demo={demo} onDemoClick={handleDemoClick} />
               </Grid>
             ))}
           </Grid>
         ) : (
           <Box sx={{ textAlign: 'center', py: 5 }}>
             <Typography variant="h5" color="text.secondary" gutterBottom>
-              No deals match your filters
+              No demos match your filters
             </Typography>
             <Button 
               variant="contained" 
@@ -370,11 +351,11 @@ const DealsPage: React.FC = () => {
         {/* Call to Action */}
         <Box sx={{ textAlign: 'center', mt: 6, mb: 4 }}>
           <Typography variant="h4" gutterBottom>
-            Looking for something specific?
+            Looking for a specific demo vehicle?
           </Typography>
           <Typography variant="body1" paragraph sx={{ maxWidth: 700, mx: 'auto', mb: 3 }}>
             We can help you find the perfect vehicle at the best possible price. 
-            Our team has access to exclusive deals and can negotiate on your behalf.
+            Our team has access to exclusive demos and can arrange a customized experience for you.
           </Typography>
           <Button 
             variant="contained" 
@@ -406,7 +387,7 @@ const DealsPage: React.FC = () => {
         maxWidth="md"
         fullWidth
       >
-        {selectedDeal && (
+        {selectedDemo && (
           <>
             <DialogTitle sx={{ 
               display: 'flex', 
@@ -417,10 +398,10 @@ const DealsPage: React.FC = () => {
             }}>
               <Box>
                 <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', mb: 0 }}>
-                  {selectedDeal.year} {selectedDeal.make}
+                  {selectedDemo.year} {selectedDemo.make}
                 </Typography>
                 <Typography variant="h6" component="div" color="primary.main">
-                  {selectedDeal.model}
+                  {selectedDemo.model}
                 </Typography>
               </Box>
               <IconButton onClick={handleCloseDialog} size="large">
@@ -432,8 +413,8 @@ const DealsPage: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <Box 
                     component="img" 
-                    src={selectedDeal.image} 
-                    alt={`${selectedDeal.year} ${selectedDeal.make} ${selectedDeal.model}`} 
+                    src={selectedDemo.image} 
+                    alt={`${selectedDemo.year} ${selectedDemo.make} ${selectedDemo.model}`} 
                     sx={{ 
                       width: '100%', 
                       borderRadius: 1,
@@ -445,45 +426,45 @@ const DealsPage: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold', mb: 1 }}>
-                      ${selectedDeal.leasePrice}/month
+                      ${selectedDemo.leasePrice}/month
                     </Typography>
                     <Grid container spacing={1}>
                       <Grid item xs={6}>
                         <Typography variant="body2">
-                          <strong>Term:</strong> {selectedDeal.term} months
+                          <strong>Term:</strong> {selectedDemo.term} months
                         </Typography>
                       </Grid>
                       <Grid item xs={6}>
                         <Typography variant="body2">
-                          <strong>Down:</strong> ${selectedDeal.downPayment.toLocaleString()}
+                          <strong>Down:</strong> ${selectedDemo.downPayment.toLocaleString()}
                         </Typography>
                       </Grid>
                       <Grid item xs={6}>
                         <Typography variant="body2">
-                          <strong>Mileage:</strong> {selectedDeal.mileage.toLocaleString()}/yr
+                          <strong>Mileage:</strong> {selectedDemo.mileage.toLocaleString()}/yr
                         </Typography>
                       </Grid>
                       <Grid item xs={6}>
                         <Typography variant="body2">
-                          <strong>MSRP:</strong> <span style={{textDecoration: 'line-through'}}>${selectedDeal.msrp.toLocaleString()}</span>
+                          <strong>MSRP:</strong> <span style={{textDecoration: 'line-through'}}>${selectedDemo.msrp.toLocaleString()}</span>
                         </Typography>
                       </Grid>
                     </Grid>
-                    {selectedDeal.savings && (
+                    {selectedDemo.savings && (
                       <Typography variant="body2" sx={{ color: 'error.main', fontWeight: 'bold', mt: 1 }}>
-                        <strong>Save:</strong> ${selectedDeal.savings.toLocaleString()}
+                        <strong>Save:</strong> ${selectedDemo.savings.toLocaleString()}
                       </Typography>
                     )}
                   </Box>
                 </Grid>
                 
-                {!showContactForm && selectedDeal.description && (
+                {!showContactForm && selectedDemo.description && (
                   <Grid item xs={12}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 1 }}>
-                      About this offer
+                      About this demo
                     </Typography>
                     <Typography variant="body2" sx={{ mb: 1 }}>
-                      {selectedDeal.description}
+                      {selectedDemo.description}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                       Limited time offer. Subject to credit approval. Additional fees may apply.
@@ -495,7 +476,7 @@ const DealsPage: React.FC = () => {
                   <Grid item xs={12}>
                     <Box component="form" onSubmit={handleFormSubmit} ref={formRef} sx={{ mt: 1 }}>
                       <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                        Contact us about this {selectedDeal.year} {selectedDeal.make} {selectedDeal.model}
+                        Contact us about this {selectedDemo.year} {selectedDemo.make} {selectedDemo.model}
                       </Typography>
                       
                       {formSubmitted ? (
@@ -553,7 +534,7 @@ const DealsPage: React.FC = () => {
                           </Box>
                           
                           <Typography variant="caption" color="text.secondary">
-                            By submitting, you agree to be contacted about this vehicle deal.
+                            By submitting, you agree to be contacted about this vehicle demo.
                           </Typography>
                         </Stack>
                       )}
@@ -590,7 +571,7 @@ const DealsPage: React.FC = () => {
                     }
                   }}
                 >
-                  Contact About This Deal
+                  Contact About This Demo
                 </Button>
               )}
               {showContactForm && !formSubmitted && (
@@ -629,4 +610,4 @@ const DealsPage: React.FC = () => {
   );
 };
 
-export default DealsPage;
+export default DemosPage;
