@@ -2,29 +2,34 @@ import React from 'react';
 import './ToggleSwitch.css';
 
 interface ToggleSwitchProps {
-  checked: boolean;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  selected: "consultation" | "lease" | "sell";
+  onChange: (value: "consultation" | "lease" | "sell") => void;
 }
 
-const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange }) => {
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ selected, onChange }) => {
   return (
     <div className="toggle">
       <div className="btn-container">
-        <label className="switch btn-color-mode-switch">
-          <input
-            type="checkbox"
-            name="color_mode"
-            id="color_mode"
-            checked={checked}
-            onChange={onChange} 
-          />
-          <label
-            htmlFor="color_mode"
-            data-on="Sell"
-            data-off="Lease"
-            className="btn-color-mode-switch-inner"
-          ></label>
-        </label>
+        <div className="triple-toggle">
+          <button
+            className={`toggle-btn ${selected === "consultation" ? "active" : ""}`}
+            onClick={() => onChange("consultation")}
+          >
+            CONSULTATION
+          </button>
+          <button
+            className={`toggle-btn ${selected === "lease" ? "active" : ""}`}
+            onClick={() => onChange("lease")}
+          >
+            LEASE
+          </button>
+          <button
+            className={`toggle-btn ${selected === "sell" ? "active" : ""}`}
+            onClick={() => onChange("sell")}
+          >
+            SELL
+          </button>
+        </div>
       </div>
     </div>
   );

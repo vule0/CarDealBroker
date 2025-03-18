@@ -91,3 +91,67 @@ label {
     text-align: center; 
     width: 100px;
 }
+
+.toggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.btn-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.triple-toggle {
+  display: flex;
+  background-color: #f0f0f0;
+  border-radius: 30px;
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  margin: 20px 0;
+  width: 100%;
+  max-width: 650px;
+  justify-content: space-between;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 14px 20px;
+  margin: 0 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  color: #777;
+  transition: all 0.3s ease;
+  border-radius: 25px;
+  position: relative;
+  outline: none;
+  letter-spacing: 1px;
+}
+
+.toggle-btn.active {
+  background-color: #1dacf0;
+  color: white;
+  box-shadow: 0 4px 12px rgba(29, 172, 240, 0.4);
+  transform: translateY(-2px);
+}
+
+.toggle-btn:hover:not(.active) {
+  background-color: #e0e0e0;
+  color: #333;
+  transform: translateY(-1px);
+}
+
+.switch {
+  display: none;
+}
+
+.btn-color-mode-switch-inner {
+  display: none;
+}

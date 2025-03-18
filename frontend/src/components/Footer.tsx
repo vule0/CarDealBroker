@@ -49,13 +49,7 @@ const Footer: React.FC = () => {
           </Link>
         </Typography>
       </Box>
-
-      <Typography variant="body2" sx={{ textAlign: "center" }}>
-        Copyright © 2025 cardealbroker.com - All Rights Reserved.
-      </Typography>
-
-      {/* Social Media Links */}
-      <Box sx={{ display: "flex", gap: 1, paddingRight: "15px"}}>
+<Box sx={{ display: "flex", gap: 1, paddingRight: "15px"}}>
         <IconButton
           component={Link}
           href="https://instagram.com/thecardealbroker"
@@ -75,6 +69,12 @@ const Footer: React.FC = () => {
         </IconButton>
         
       </Box>
+      <Typography variant="body2" sx={{ textAlign: "center" }}>
+        Copyright © 2025 cardealbroker.com - All Rights Reserved.
+      </Typography>
+
+      {/* Social Media Links */}
+      
       
     </Box>
   );

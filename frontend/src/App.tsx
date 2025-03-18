@@ -3,14 +3,40 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LandingPage from './pages/LandingPage';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme';
+import DealsPage from './pages/DealsPage';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import { useState } from 'react';
+import { Box } from '@mui/material';
 
 function App() {
+  const [selectedForm, setSelectedForm] = useState<"consultation" | "lease" | "sell">("consultation");
+
+  const handleFormSelect = (formType: "consultation" | "lease" | "sell") => {
+    setSelectedForm(formType);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Router>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-        </Routes>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <Header onFormSelect={handleFormSelect} />
+          <Box sx={{ flexGrow: 1 }}>
+            <Routes>
+              <Route 
+                path="/" 
+                element={
+                  <LandingPage 
+                    selectedForm={selectedForm} 
+                    setSelectedForm={setSelectedForm} 
+                  />
+                } 
+              />
+              <Route path="/deals" element={<DealsPage />} />
+            </Routes>
+          </Box>
+          <Footer />
+        </Box>
       </Router>
     </ThemeProvider>
   )

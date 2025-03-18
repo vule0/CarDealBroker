@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, Dispatch, SetStateAction} from "react";
 import { Box, Button, Container, Typography, useMediaQuery, useTheme } from "@mui/material";
 // import { Link } from "react-router-dom";
 import { Link } from "react-scroll";
@@ -6,30 +6,40 @@ import ToggleSwitch from "../components/ToggleSwitch";
 import heroImage from "../assets/CarDealBrokerLogo.jpg";
 import AboutComponent from "../components/AboutComponent";
 import LeaseOrSell from "../components/LeaseOrSell";
-import Header from '../components/Header'
-import Footer from "../components/Footer";
 
-const LandingPage: React.FC = () => {
+interface LandingPageProps {
+  selectedForm?: "consultation" | "lease" | "sell";
+  setSelectedForm?: Dispatch<SetStateAction<"consultation" | "lease" | "sell">>;
+}
+
+const LandingPage: React.FC<LandingPageProps> = ({ 
+  selectedForm: propSelectedForm = "consultation", 
+  setSelectedForm: propSetSelectedForm 
+}) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    
+    const [localSelectedForm, setLocalSelectedForm] = useState<"consultation" | "lease" | "sell">(propSelectedForm);
+    
+    const currentSelectedForm = propSelectedForm || localSelectedForm;
+    const setCurrentSelectedForm = (value: "consultation" | "lease" | "sell") => {
+      if (propSetSelectedForm) {
+        propSetSelectedForm(value);
+      } else {
+        setLocalSelectedForm(value);
+      }
+    };
 
-    const [selectedForm, setSelectedForm] = useState<"lease" | "sell" | null>("lease");
-    const [isChecked, setIsChecked] = useState(false);
+    const handleFormChange = (value: "consultation" | "lease" | "sell") => {
+      setCurrentSelectedForm(value);
+    };
 
-    const handleFormChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const isChecked = event.target.checked;
-        setIsChecked(isChecked);
-        setSelectedForm(isChecked ? "sell" : "lease");
-      };
-
-      const handleButtonClick = (formType: "lease" | "sell") => {
-        setSelectedForm(formType);
-        setIsChecked(formType === "sell");
-      };
+    const handleButtonClick = (formType: "consultation" | "lease" | "sell") => {
+      setCurrentSelectedForm(formType);
+    };
 
   return (
-    <Box id= "hero-section" sx={{ width: "100%", textAlign: "center" }}>
-      <Header onFormSelect={handleButtonClick}/>
+    <Box id="hero-section" sx={{ width: "100%", textAlign: "center" }}>
       <Box
         sx={{
           width: "100%",
@@ -69,7 +79,7 @@ const LandingPage: React.FC = () => {
           backgroundColor: "#1dacf0",
           display: "flex",
           flexDirection: isMobile ? "column" : "row",
-          gap: isMobile ? 0 : 3,
+          gap: isMobile ? 2 : 3,
           justifyContent: "center",
           alignItems: "center",
           px: 0,
@@ -78,48 +88,11 @@ const LandingPage: React.FC = () => {
         }}
       >
         <Button
-        
           variant="contained"
           component={Link}
           to="lease-sell-form"
           smooth={true}
-          onClick={() => handleButtonClick("lease")}
-          sx={{
-            backgroundColor: "#323435",
-            color: "white",
-            fontSize: "1.2rem",
-            px: isMobile ? 2 : 4,
-            py: 1.5,
-            borderRadius: "30px",
-            border: "none",
-            textTransform: "none",
-            "&:hover": {
-              color:"black",
-              backgroundColor:"white",
-              // opacity: .75,
-            },
-          }}
-        >
-          Lease A Vehicle
-        </Button>
-        <Typography
-          sx={{
-            color: "white",
-            fontSize: "1.5rem",
-            fontWeight: "light",
-            paddingTop: 0,
-            paddingBottom: 0,
-            marginTop: 0,
-          }}
-        >
-          or
-        </Typography>
-        <Button
-          variant="contained"
-          component={Link}
-          to="lease-sell-form"
-          smooth={true}
-          onClick={() => handleButtonClick("sell")}
+          onClick={() => handleButtonClick("consultation")}
           sx={{
             backgroundColor: "white",
             color: "#323435",
@@ -130,8 +103,55 @@ const LandingPage: React.FC = () => {
             border: "none",
             textTransform: "none",
             "&:hover": {
-              // opacity: .75,
-              backgroundColor: "#323435",
+              backgroundColor: "#808080",
+              color: "white"
+            },
+          }}
+        >
+          Get a Consultation
+        </Button>
+        
+        <Button
+          variant="contained"
+          component={Link}
+          to="lease-sell-form"
+          smooth={true}
+          onClick={() => handleButtonClick("lease")}
+          sx={{
+            backgroundColor:"white",
+            color:"#323435",
+            fontSize: "1.2rem",
+            px: isMobile ? 2 : 4,
+            py: 1.5,
+            borderRadius: "30px",
+            border: "none",
+            textTransform: "none",
+            "&:hover": {
+              color: "white",
+              backgroundColor: "#808080",
+            },
+          }}
+        >
+          Lease A Vehicle
+        </Button>
+        
+        <Button
+          variant="contained"
+          component={Link}
+          to="lease-sell-form"
+          smooth={true}
+          onClick={() => handleButtonClick("sell")}
+          sx={{
+            backgroundColor: "white",
+            color:"#323435",
+            fontSize: "1.2rem",
+            px: isMobile ? 2 : 4,
+            py: 1.5,
+            borderRadius: "30px",
+            border: "none",
+            textTransform: "none",
+            "&:hover": {
+              backgroundColor: "#808080",
               color: "white"
             },
           }}
@@ -154,16 +174,18 @@ const LandingPage: React.FC = () => {
       marginTop: 15,
     }}
   >
-        <ToggleSwitch checked={isChecked} onChange={handleFormChange}/>
-        {selectedForm === "lease" && (
-            <LeaseOrSell formType={selectedForm === "lease" ? true : false} />
+        <ToggleSwitch selected={currentSelectedForm} onChange={handleFormChange}/>
+        {currentSelectedForm === "lease" && (
+            <LeaseOrSell formType="lease" />
         )}
-        {selectedForm === "sell" && (
-            <LeaseOrSell formType={selectedForm === "sell" ? false : true} />
+        {currentSelectedForm === "sell" && (
+            <LeaseOrSell formType="sell" />
+        )}
+        {currentSelectedForm === "consultation" && (
+            <LeaseOrSell formType="consultation" />
         )}
         </Box>
       </Container>
-      <Footer/>
     </Box>
   );
 };
