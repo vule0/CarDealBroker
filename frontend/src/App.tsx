@@ -21,7 +21,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <Router>
-        <ScrollToTop />
+        {/* <ScrollToTop /> */}
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
           <Header onFormSelect={handleFormSelect} />
           <Box sx={{ flexGrow: 1 }}>

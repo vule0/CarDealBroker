@@ -31,6 +31,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ScrollToTop from "../components/ScrollToTop";
 
 // Extract all unique tags from sample demos
 const allTags = Array.from(
@@ -167,6 +168,7 @@ const DemosPage: React.FC = () => {
 
   return (
     <Box sx={{ padding: 2, marginTop: 8 }}>
+        <ScrollToTop/>
       <Container maxWidth="xl">
         <Typography variant="h2" component="h1" gutterBottom align="center" sx={{ fontWeight: 600, mb: 4 }}>
           Featured Demos

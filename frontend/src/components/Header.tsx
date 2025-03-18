@@ -97,7 +97,7 @@ const Header: React.FC<HeaderProps> = ({ onFormSelect }) => {
             </ListItemButton>
             <ListItemButton
               component={Link}
-              to="lease-component"
+              to="lease-sell-form"
               spy={true}
               smooth={true}
               offset={-100}
@@ -309,10 +309,10 @@ const Header: React.FC<HeaderProps> = ({ onFormSelect }) => {
                   mr: 1,
                   px: 2,
                   textTransform: "none" as const,
-                  fontSize: "0.8rem",
+                  fontSize: ".9rem",
                 }}
               >
-                Call
+                Call Us
               </Button>
               <IconButton
                 edge="end"
