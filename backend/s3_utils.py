@@ -11,7 +11,7 @@ load_dotenv()
 AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_BUCKET_NAME = os.getenv("AWS_BUCKET_NAME")
-AWS_REGION = os.getenv("AWS_REGION", "us-east-2")  # Default to us-east-1
+AWS_REGION = os.getenv("AWS_REGION", "us-east-2")
 
 # Initialize S3 client
 def get_s3_client():
@@ -56,8 +56,8 @@ def upload_file_to_s3(file, folder="uploads"):
             AWS_BUCKET_NAME, 
             file_path,
             ExtraArgs={
-                "ContentType": file.content_type,
-                "ACL": "public-read"  # Make the file publicly accessible
+                "ContentType": file.content_type
+                # "ACL": "public-read" 
             }
         )
         

@@ -51,7 +51,7 @@ class AdminLoginResponse(BaseModel):
 async def admin_login(login_data: AdminLoginRequest):
     # Get admin password from environment variables
     admin_password = os.getenv("ADMIN_PASSWORD")
-    print(admin_password)
+    
     # Check if password matches
     if login_data.password == admin_password:
         return AdminLoginResponse(authenticated=True, message="Login successful")
