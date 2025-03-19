@@ -1,6 +1,6 @@
 # import uvicorn
 import os
-from fastapi import FastAPI, BackgroundTasks, HTTPException, Depends
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Depends, UploadFile, File, Form
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import sendgrid
@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 # Import database modules
 from database import get_db, init_db, LeaseFormSubmission, SellFormSubmission, ConsultationFormSubmission, Deal, Demo
+from s3_utils import upload_file_to_s3
 
 load_dotenv()
 
@@ -37,6 +38,25 @@ app.add_middleware(
     allow_methods=["*"], 
     allow_headers=["*"],
 )
+
+# Admin authentication endpoint
+class AdminLoginRequest(BaseModel):
+    password: str
+
+class AdminLoginResponse(BaseModel):
+    authenticated: bool
+    message: str
+
+@app.post("/admin/login", response_model=AdminLoginResponse)
+async def admin_login(login_data: AdminLoginRequest):
+    # Get admin password from environment variables
+    admin_password = os.getenv("ADMIN_PASSWORD")
+    
+    # Check if password matches
+    if login_data.password == admin_password:
+        return AdminLoginResponse(authenticated=True, message="Login successful")
+    else:
+        return AdminLoginResponse(authenticated=False, message="Invalid password")
 
 class EmailRequest(BaseModel):
     formType: str
@@ -344,3 +364,151 @@ async def get_deals(db: Session = Depends(get_db)):
 async def get_demos(db: Session = Depends(get_db)):
     demos = db.query(Demo).all()
     return [demo_to_response(demo) for demo in demos]
+
+# Models for creating/updating deals and demos
+class DealCreateRequest(BaseModel):
+    make: str
+    model: str
+    year: int
+    lease_price: float
+    term: int
+    down_payment: float
+    mileage: int
+    msrp: float
+    savings: Optional[float] = None
+    tags: Optional[str] = None
+    description: Optional[str] = None
+    
+class DemoCreateRequest(BaseModel):
+    make: str
+    model: str
+    year: int
+    lease_price: float
+    term: int
+    down_payment: float
+    mileage: int
+    msrp: float
+    savings: Optional[float] = None
+    tags: Optional[str] = None
+    description: Optional[str] = None
+
+# Image upload endpoints
+@app.post("/upload/deal-image/", response_model=dict)
+async def upload_deal_image(file: UploadFile = File(...)):
+    """Upload an image for a deal to S3 and return the URL."""
+    try:
+        # Upload to S3 with 'deals' folder
+        image_url = upload_file_to_s3(file, folder="deals")
+        return {"status": "success", "image_url": image_url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
+
+@app.post("/upload/demo-image/", response_model=dict)
+async def upload_demo_image(file: UploadFile = File(...)):
+    """Upload an image for a demo to S3 and return the URL."""
+    try:
+        # Upload to S3 with 'demos' folder
+        image_url = upload_file_to_s3(file, folder="demos")
+        return {"status": "success", "image_url": image_url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
+
+# CRUD endpoints for deals
+@app.post("/deals/", response_model=DealResponse)
+async def create_deal(
+    image_url: str = Form(...),
+    deal_data: DealCreateRequest = Depends(),
+    db: Session = Depends(get_db)
+):
+    """Create a new deal with the provided data and image URL."""
+    try:
+        # Create new Deal object
+        new_deal = Deal(
+            make=deal_data.make,
+            model=deal_data.model,
+            year=deal_data.year,
+            image_url=image_url,
+            lease_price=deal_data.lease_price,
+            term=deal_data.term,
+            down_payment=deal_data.down_payment,
+            mileage=deal_data.mileage,
+            msrp=deal_data.msrp,
+            savings=deal_data.savings,
+            tags=deal_data.tags,
+            description=deal_data.description
+        )
+        
+        # Add to database
+        db.add(new_deal)
+        db.commit()
+        db.refresh(new_deal)
+        
+        return deal_to_response(new_deal)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create deal: {str(e)}")
+
+@app.delete("/deals/{deal_id}", response_model=dict)
+async def delete_deal(deal_id: int, db: Session = Depends(get_db)):
+    """Delete a deal by ID."""
+    deal = db.query(Deal).filter(Deal.id == deal_id).first()
+    if not deal:
+        raise HTTPException(status_code=404, detail="Deal not found")
+    
+    try:
+        db.delete(deal)
+        db.commit()
+        return {"status": "success", "message": f"Deal {deal_id} deleted successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete deal: {str(e)}")
+
+# CRUD endpoints for demos
+@app.post("/demos/", response_model=DemoResponse)
+async def create_demo(
+    image_url: str = Form(...),
+    demo_data: DemoCreateRequest = Depends(),
+    db: Session = Depends(get_db)
+):
+    """Create a new demo with the provided data and image URL."""
+    try:
+        # Create new Demo object
+        new_demo = Demo(
+            make=demo_data.make,
+            model=demo_data.model,
+            year=demo_data.year,
+            image_url=image_url,
+            lease_price=demo_data.lease_price,
+            term=demo_data.term,
+            down_payment=demo_data.down_payment,
+            mileage=demo_data.mileage,
+            msrp=demo_data.msrp,
+            savings=demo_data.savings,
+            tags=demo_data.tags,
+            description=demo_data.description
+        )
+        
+        # Add to database
+        db.add(new_demo)
+        db.commit()
+        db.refresh(new_demo)
+        
+        return demo_to_response(new_demo)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create demo: {str(e)}")
+
+@app.delete("/demos/{demo_id}", response_model=dict)
+async def delete_demo(demo_id: int, db: Session = Depends(get_db)):
+    """Delete a demo by ID."""
+    demo = db.query(Demo).filter(Demo.id == demo_id).first()
+    if not demo:
+        raise HTTPException(status_code=404, detail="Demo not found")
+    
+    try:
+        db.delete(demo)
+        db.commit()
+        return {"status": "success", "message": f"Demo {demo_id} deleted successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete demo: {str(e)}")

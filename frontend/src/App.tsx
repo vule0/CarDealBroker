@@ -5,6 +5,8 @@ import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme';
 import DealsPage from './pages/DealsPage';
 import DemosPage from './pages/DemosPage';
+import AdminPage from './pages/AdminPage';
+import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
 import Footer from './components/Footer';
 // import ScrollToTop from './components/ScrollToTop';
@@ -37,6 +39,11 @@ function App() {
               />
               <Route path="/deals" element={<DealsPage />} />
               <Route path="/demos" element={<DemosPage />} />
+              <Route path="/admin" element={
+                <ProtectedRoute>
+                  <AdminPage />
+                </ProtectedRoute>
+              } />
             </Routes>
           </Box>
           <Footer />
