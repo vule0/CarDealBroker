@@ -483,6 +483,42 @@ async def create_deal(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to create deal: {str(e)}")
 
+@app.put("/deals/{deal_id}", response_model=DealResponse)
+async def update_deal(
+    deal_id: int,
+    deal_data: DealCreateRequest,
+    db: Session = Depends(get_db)
+):
+    """Update an existing deal by ID."""
+    # Find the deal
+    deal = db.query(Deal).filter(Deal.id == deal_id).first()
+    if not deal:
+        raise HTTPException(status_code=404, detail="Deal not found")
+    
+    try:
+        # Update deal attributes
+        deal.make = deal_data.make
+        deal.model = deal_data.model
+        deal.year = deal_data.year
+        deal.image_url = deal_data.image_url
+        deal.lease_price = deal_data.lease_price
+        deal.term = deal_data.term
+        deal.down_payment = deal_data.down_payment
+        deal.mileage = deal_data.mileage
+        deal.msrp = deal_data.msrp
+        deal.savings = deal_data.savings
+        deal.tags = deal_data.tags
+        deal.description = deal_data.description
+        
+        # Commit changes
+        db.commit()
+        db.refresh(deal)
+        
+        return deal_to_response(deal)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to update deal: {str(e)}")
+
 @app.delete("/deals/{deal_id}", response_model=dict)
 async def delete_deal(deal_id: int, db: Session = Depends(get_db)):
     """Delete a deal by ID."""
@@ -531,6 +567,42 @@ async def create_demo(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to create demo: {str(e)}")
+
+@app.put("/demos/{demo_id}", response_model=DemoResponse)
+async def update_demo(
+    demo_id: int,
+    demo_data: DemoCreateRequest,
+    db: Session = Depends(get_db)
+):
+    """Update an existing demo by ID."""
+    # Find the demo
+    demo = db.query(Demo).filter(Demo.id == demo_id).first()
+    if not demo:
+        raise HTTPException(status_code=404, detail="Demo not found")
+    
+    try:
+        # Update demo attributes
+        demo.make = demo_data.make
+        demo.model = demo_data.model
+        demo.year = demo_data.year
+        demo.image_url = demo_data.image_url
+        demo.lease_price = demo_data.lease_price
+        demo.term = demo_data.term
+        demo.down_payment = demo_data.down_payment
+        demo.mileage = demo_data.mileage
+        demo.msrp = demo_data.msrp
+        demo.savings = demo_data.savings
+        demo.tags = demo_data.tags
+        demo.description = demo_data.description
+        
+        # Commit changes
+        db.commit()
+        db.refresh(demo)
+        
+        return demo_to_response(demo)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to update demo: {str(e)}")
 
 @app.delete("/demos/{demo_id}", response_model=dict)
 async def delete_demo(demo_id: int, db: Session = Depends(get_db)):
