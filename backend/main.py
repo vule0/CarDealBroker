@@ -370,6 +370,7 @@ class DealCreateRequest(BaseModel):
     make: str
     model: str
     year: int
+    image_url: str
     lease_price: float
     term: int
     down_payment: float
@@ -383,6 +384,7 @@ class DemoCreateRequest(BaseModel):
     make: str
     model: str
     year: int
+    image_url: str
     lease_price: float
     term: int
     down_payment: float
@@ -450,8 +452,7 @@ async def upload_demo_image(file: UploadFile = File(...)):
 # CRUD endpoints for deals
 @app.post("/deals/", response_model=DealResponse)
 async def create_deal(
-    image_url: str = Form(...),
-    deal_data: DealCreateRequest = Depends(),
+    deal_data: DealCreateRequest,
     db: Session = Depends(get_db)
 ):
     """Create a new deal with the provided data and image URL."""
@@ -461,7 +462,7 @@ async def create_deal(
             make=deal_data.make,
             model=deal_data.model,
             year=deal_data.year,
-            image_url=image_url,
+            image_url=deal_data.image_url,  # Now expecting image_url in the request body
             lease_price=deal_data.lease_price,
             term=deal_data.term,
             down_payment=deal_data.down_payment,
@@ -500,8 +501,7 @@ async def delete_deal(deal_id: int, db: Session = Depends(get_db)):
 # CRUD endpoints for demos
 @app.post("/demos/", response_model=DemoResponse)
 async def create_demo(
-    image_url: str = Form(...),
-    demo_data: DemoCreateRequest = Depends(),
+    demo_data: DemoCreateRequest,
     db: Session = Depends(get_db)
 ):
     """Create a new demo with the provided data and image URL."""
@@ -511,7 +511,7 @@ async def create_demo(
             make=demo_data.make,
             model=demo_data.model,
             year=demo_data.year,
-            image_url=image_url,
+            image_url=demo_data.image_url,  # Now expecting image_url in the request body
             lease_price=demo_data.lease_price,
             term=demo_data.term,
             down_payment=demo_data.down_payment,

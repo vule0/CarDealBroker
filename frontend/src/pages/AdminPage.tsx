@@ -153,18 +153,14 @@ const AdminPage: React.FC = () => {
       
       const imageUrl = imageResponse.data.image_url;
       
-      // Then, create the deal with the image URL
-      const dealFormDataWithImage = new FormData();
-      dealFormDataWithImage.append('image_url', imageUrl);
+      // Then, create the deal with the image URL as part of the JSON payload
+      // Instead of FormData, send as JSON
+      const dealDataWithImage = {
+        ...dealFormData,
+        image_url: imageUrl
+      };
       
-      // Append all other form fields
-      Object.entries(dealFormData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          dealFormDataWithImage.append(key, value.toString());
-        }
-      });
-      
-      await api.post('/deals/', dealFormDataWithImage);
+      await api.post('/deals/', dealDataWithImage);
       
       // Reset form after successful submission
       setDealFormData(initialDealFormData);
@@ -201,18 +197,14 @@ const AdminPage: React.FC = () => {
       
       const imageUrl = imageResponse.data.image_url;
       
-      // Then, create the demo with the image URL
-      const demoFormDataWithImage = new FormData();
-      demoFormDataWithImage.append('image_url', imageUrl);
+      // Then, create the demo with the image URL as part of the JSON payload
+      // Instead of FormData, send as JSON
+      const demoDataWithImage = {
+        ...demoFormData,
+        image_url: imageUrl
+      };
       
-      // Append all other form fields
-      Object.entries(demoFormData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          demoFormDataWithImage.append(key, value.toString());
-        }
-      });
-      
-      await api.post('/demos/', demoFormDataWithImage);
+      await api.post('/demos/', demoDataWithImage);
       
       // Reset form after successful submission
       setDemoFormData(initialDemoFormData);
