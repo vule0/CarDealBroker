@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Typography, Link, IconButton } from "@mui/material";
 import {Instagram} from "@mui/icons-material";
-import CarDealBrokerWhiteSmall from "../assets/CarDealBrokerWhiteSmall.jpg";
+import CarDealBrokerWhiteSmall from "../assets/Car Deal Broker White logo transparent.png";
 
 // Custom TikTok Icon
 const TikTokIcon = ({ color = "#FFFFFF", size = 30 }) => {
