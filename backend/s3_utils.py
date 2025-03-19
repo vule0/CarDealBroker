@@ -1,6 +1,8 @@
 import os
 import uuid
 import boto3
+import tempfile
+import shutil
 from dotenv import load_dotenv
 from botocore.exceptions import ClientError
 
@@ -39,6 +41,13 @@ def upload_file_to_s3(file, folder="uploads"):
     Returns:
         str: Public URL of the uploaded file
     """
+    # Create a temporary file to use for the upload
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        # Read from the FastAPI UploadFile and write to our temp file
+        file.file.seek(0)
+        shutil.copyfileobj(file.file, temp_file)
+        temp_file_path = temp_file.name
+    
     try:
         # Generate a unique filename
         file_extension = file.filename.split(".")[-1]
@@ -50,16 +59,17 @@ def upload_file_to_s3(file, folder="uploads"):
         # Get the S3 client
         s3_client = get_s3_client()
         
-        # Upload the file
-        s3_client.upload_fileobj(
-            file.file, 
-            AWS_BUCKET_NAME, 
-            file_path,
-            ExtraArgs={
-                "ContentType": file.content_type
-                # "ACL": "public-read" 
-            }
-        )
+        # Upload the file using the temp file
+        with open(temp_file_path, 'rb') as upload_file:
+            s3_client.upload_fileobj(
+                upload_file, 
+                AWS_BUCKET_NAME, 
+                file_path,
+                ExtraArgs={
+                    "ContentType": file.content_type
+                    # Removed "ACL": "public-read" which was causing the error
+                }
+            )
         
         # Generate and return the public URL
         file_url = f"https://{AWS_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{file_path}"
@@ -72,5 +82,9 @@ def upload_file_to_s3(file, folder="uploads"):
         print(f"Unexpected error: {e}")
         raise
     finally:
+        # Clean up the temporary file
+        if os.path.exists(temp_file_path):
+            os.unlink(temp_file_path)
+        
         # Reset file cursor position
         file.file.seek(0) 

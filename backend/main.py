@@ -397,20 +397,54 @@ class DemoCreateRequest(BaseModel):
 async def upload_deal_image(file: UploadFile = File(...)):
     """Upload an image for a deal to S3 and return the URL."""
     try:
+        # Verify file is an image
+        content_type = file.content_type
+        if not content_type or not content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="File must be an image")
+        
+        # Enforce file size limit (5MB)
+        file_size_limit = 5 * 1024 * 1024  # 5MB
+        file.file.seek(0, 2)  # Seek to the end of the file
+        file_size = file.file.tell()  # Get current position (file size)
+        file.file.seek(0)  # Reset to the beginning
+        
+        if file_size > file_size_limit:
+            raise HTTPException(status_code=400, detail=f"File size exceeds the 5MB limit")
+        
         # Upload to S3 with 'deals' folder
         image_url = upload_file_to_s3(file, folder="deals")
         return {"status": "success", "image_url": image_url}
+    except HTTPException as he:
+        raise he
     except Exception as e:
+        print(f"Error in upload_deal_image: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
 
 @app.post("/upload/demo-image/", response_model=dict)
 async def upload_demo_image(file: UploadFile = File(...)):
     """Upload an image for a demo to S3 and return the URL."""
     try:
+        # Verify file is an image
+        content_type = file.content_type
+        if not content_type or not content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="File must be an image")
+        
+        # Enforce file size limit (5MB)
+        file_size_limit = 5 * 1024 * 1024  # 5MB
+        file.file.seek(0, 2)  # Seek to the end of the file
+        file_size = file.file.tell()  # Get current position (file size)
+        file.file.seek(0)  # Reset to the beginning
+        
+        if file_size > file_size_limit:
+            raise HTTPException(status_code=400, detail=f"File size exceeds the 5MB limit")
+        
         # Upload to S3 with 'demos' folder
         image_url = upload_file_to_s3(file, folder="demos")
         return {"status": "success", "image_url": image_url}
+    except HTTPException as he:
+        raise he
     except Exception as e:
+        print(f"Error in upload_demo_image: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
 
 # CRUD endpoints for deals
