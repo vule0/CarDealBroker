@@ -6,7 +6,10 @@ This guide explains how to set up a MySQL database on Railway and connect it to 
 
 For local development, the application is configured to use SQLite by default if no MySQL connection is available:
 
-1. Use the provided .env file with `DATABASE_URL=sqlite:///./cardealbroker.db`
+1. Ensure your .env file has the SQLite connection string:
+   ```
+   DATABASE_URL=sqlite:///./cardealbroker.db
+   ```
 2. This will create a local SQLite database file when you run the application
 3. No additional database setup is required for local development
 
@@ -22,50 +25,49 @@ uvicorn main:app --reload
 ### 1. Create a MySQL Database on Railway
 
 1. Log in to your [Railway](https://railway.app/) account
-2. Click on "New Project" or use your existing project where your API is deployed
-3. Click on "New Service" → "Database" → "MySQL"
-4. Wait for Railway to provision your MySQL database
+2. Click on "New Project" or open your existing project
+3. Click on "New" → "Database" → "MySQL"
+4. Wait for Railway to provision your MySQL database (this may take a few minutes)
 
 ### 2. Get the Database Connection Details
 
 1. Once your MySQL database is provisioned, click on it in the Railway dashboard
 2. Go to the "Connect" tab
-3. You'll find the connection information including:
-   - Host
-   - Port
-   - Database name
-   - Username
-   - Password
+3. You'll find the connection information including the connection string
+4. **Important**: Railway provides a MySQL connection string in this format:
+   ```
+   mysql://username:password@hostname:port/database_name
+   ```
 
 ### 3. Configure Environment Variables in Railway
 
-1. In your Railway project, go to your backend service
+1. Go to your backend service (not the MySQL service)
 2. Click on the "Variables" tab
-3. Add a new environment variable named `DATABASE_URL` with the value:
-   ```
-   mysql+pymysql://username:password@hostname:port/database_name
-   ```
-   Replace `username`, `password`, `hostname`, `port`, and `database_name` with the values from step 2.
+3. Add a new environment variable with exactly this name: `DATABASE_URL`
+4. Use the connection string from step 2 as the value (Railway may have already done this)
+5. **You do not need to modify the connection string** - our code will convert it to the proper format automatically
 
-### 4. Redeploy Your Backend
+### 4. Deploy Your Backend 
 
-1. After adding the environment variables, Railway should automatically redeploy your backend
-2. If not, you can trigger a redeployment manually from the "Deployments" tab
+1. Ensure your code is committed and pushed to your GitHub repository
+2. In Railway, connect your repository if you haven't already
+3. Railway should detect changes and deploy automatically
+4. If not, you can trigger a deployment manually
 
-### 5. Testing Your Database Connection
+### 5. Monitor the Deployment
 
-1. Once redeployed, your backend should now connect to the MySQL database
-2. The application will automatically create the necessary tables on startup
-3. You can test the connection by submitting a form through your frontend
-4. Check the logs in your Railway dashboard to ensure there are no database connection errors
+1. During deployment, watch the logs for any errors
+2. Look for the message "Connected to MySQL database" to confirm successful connection
+3. If you see errors, check the Troubleshooting section below
 
-### 6. Database Management
+### 6. Testing Your Database Connection
 
-You can manage your database directly from Railway:
-
-1. Go to your MySQL service in Railway
-2. Click on the "Data" tab to see and manage your database contents
-3. You can run SQL queries directly from this interface
+1. Once deployed, submit a form through your frontend
+2. Verify that the data appears in your MySQL database:
+   - Go to your MySQL service in Railway
+   - Click on the "Data" tab
+   - You should see tables for `lease_form_submissions` and `sell_form_submissions`
+   - Run a query: `SELECT * FROM lease_form_submissions;` to see the data
 
 ### 7. Accessing Your Form Submissions API Endpoints
 
@@ -73,6 +75,11 @@ New API endpoints have been added to access the form submissions:
 
 - `GET /lease_submissions/` - Get all lease form submissions
 - `GET /sell_submissions/` - Get all sell form submissions
+
+You can test these endpoints using your API URL, for example:
+```
+https://your-railway-url.up.railway.app/lease_submissions/
+```
 
 ### 8. Updating Frontend (Optional)
 
@@ -91,15 +98,38 @@ It's recommended to:
 
 ## Troubleshooting
 
-If you encounter connection issues:
+### Railway Deployment Issues
 
-1. Verify the `DATABASE_URL` format is correct
-2. Check if Railway's firewall allows connections from your backend service
-3. Ensure the MySQL service is running
-4. Check the application logs for specific error messages 
+1. **Database Connection Errors**:
+   - Verify the `DATABASE_URL` variable is set correctly in Railway
+   - Check if it's using the format `mysql://username:password@hostname:port/database_name`
+   - Our code will automatically convert this to the PyMySQL format
 
-### Common Local Development Issues:
+2. **Missing Tables**:
+   - If the tables aren't being created, check if the init_db() function is being called
+   - The application should print "Connected to MySQL database" in the logs if successful
+
+3. **Deployment Failures**:
+   - Check if all necessary packages are in requirements.txt
+   - Verify your Railway configuration in railway.json
+   - Make sure your start command in Railway is set to `python server.py`
+
+4. **Import Errors**:
+   - If you see import errors during deployment, check if all dependencies are installed
+   - The error logs will indicate which packages are missing
+
+### Local Development Issues:
 
 1. **Missing DATABASE_URL**: If you see a warning about missing DATABASE_URL, make sure your .env file is in the correct location and properly formatted
 2. **Database Errors**: For SQLite, ensure the application has write permissions to the directory
-3. **Module Import Errors**: Make sure all required packages are installed via `pip install -r requirements.txt` 
+3. **Module Import Errors**: Make sure all required packages are installed via `pip install -r requirements.txt`
+
+### Getting Railway Logs
+
+To better troubleshoot issues, you can view detailed logs:
+
+1. Go to your backend service in Railway
+2. Click on the "Deployments" tab
+3. Select the latest deployment
+4. Click on "View Logs"
+5. Look for any error messages or warnings 
