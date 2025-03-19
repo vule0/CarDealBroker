@@ -5,7 +5,6 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import sendgrid
 from sendgrid.helpers.mail import Mail, Email, To, Content
-from backend.database import SessionLocal
 from dotenv import load_dotenv
 from typing import Optional, List
 from sqlalchemy.orm import Session
