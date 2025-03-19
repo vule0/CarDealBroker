@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { 
   Box, 
   Container, 
@@ -22,26 +22,18 @@ import {
   Stack,
   Alert,
   Snackbar,
-  Collapse
+  Collapse,
+  CircularProgress
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import DealCard from "../components/DealCard.tsx";
-import { Deal, sampleDeals } from "../types/deals";
+import { Deal } from "../types/deals";
 import CloseIcon from '@mui/icons-material/Close';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ScrollToTop from "../components/ScrollToTop.tsx";
-
-// Extract all unique tags from sample deals
-const allTags = Array.from(
-  new Set(sampleDeals.flatMap(deal => deal.tags || []))
-).sort();
-
-// Extract all unique makes from sample deals
-const allMakes = Array.from(
-  new Set(sampleDeals.map(deal => deal.make))
-).sort();
+import api from "../api.ts";
 
 // Contact form initial state
 interface ContactFormData {
@@ -59,6 +51,9 @@ const initialFormData: ContactFormData = {
 };
 
 const DealsPage: React.FC = () => {
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
@@ -73,8 +68,45 @@ const DealsPage: React.FC = () => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   
-  const minPrice = 0;
-  const maxPrice = Math.max(...sampleDeals.map(deal => deal.leasePrice)) + 100;
+  // Extract unique tags and makes from deals
+  const allTags = useMemo(() => {
+    const tags = deals.flatMap(deal => deal.tags || []);
+    return Array.from(new Set(tags)).sort();
+  }, [deals]);
+  
+  const allMakes = useMemo(() => {
+    const makes = deals.map(deal => deal.make);
+    return Array.from(new Set(makes)).sort();
+  }, [deals]);
+  
+  // Calculate min and max price for the slider
+  const minPrice = useMemo(() => 0, []);
+  const maxPrice = useMemo(() => {
+    if (deals.length === 0) return 1000;
+    return Math.max(...deals.map(deal => deal.lease_price)) + 100;
+  }, [deals]);
+  
+  useEffect(() => {
+    const fetchDeals = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/deals/');
+        setDeals(response.data);
+        // Initialize price range based on actual data
+        if (response.data.length > 0) {
+          const max = Math.max(...response.data.map((deal: Deal) => deal.lease_price)) + 100;
+          setPriceRange([0, max]);
+        }
+      } catch (err) {
+        console.error('Error fetching deals:', err);
+        setError('Failed to load deals. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchDeals();
+  }, []);
 
   const handleDealClick = (deal: Deal) => {
     setSelectedDeal(deal);
@@ -144,14 +176,14 @@ const DealsPage: React.FC = () => {
 
   // Filter deals based on selected filters
   const filteredDeals = useMemo(() => {
-    return sampleDeals.filter(deal => {
+    return deals.filter(deal => {
       // Filter by vehicle make
       if (selectedMake !== 'all' && deal.make !== selectedMake) {
         return false;
       }
       
       // Filter by price range
-      if (deal.leasePrice < priceRange[0] || deal.leasePrice > priceRange[1]) {
+      if (deal.lease_price < priceRange[0] || deal.lease_price > priceRange[1]) {
         return false;
       }
       
@@ -164,7 +196,7 @@ const DealsPage: React.FC = () => {
       
       return true;
     });
-  }, [selectedMake, priceRange, selectedTags]);
+  }, [selectedMake, priceRange, selectedTags, deals]);
 
   return (
     <Box sx={{ padding: 2, marginTop: 8 }}>
@@ -174,231 +206,230 @@ const DealsPage: React.FC = () => {
           Featured Deals
         </Typography>
         
-        {/* Filters Section */}
-        <Paper 
-          elevation={2} 
-          sx={{ 
-            mb: 4, 
-            borderRadius: 2,
-            overflow: 'hidden'
-          }}
-        >
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between',
-              alignItems: 'center', 
-              p: 2,
-              backgroundColor: '#808080',
-              color: 'white',
-              cursor: 'pointer',
-              transition: 'background-color 0.2s'
-            }}
-            onClick={() => setFiltersExpanded(prev => !prev)}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <FilterAltIcon sx={{ mr: 1 }} />
-              <Typography variant="h6" component="h2" sx={{ fontWeight: 500 }}>
-                Filter Deals
-              </Typography>
-            </Box>
-            <IconButton 
-              sx={{ color: 'white' }}
-              size="small"
-            >
-              {filtersExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </IconButton>
+        {/* Loading and Error States */}
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}>
+            <CircularProgress size={60} />
           </Box>
-          
-          <Collapse in={filtersExpanded}>
-            <Box sx={{ p: 3, backgroundColor: '#f8f8f8' }}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6} md={6}>
-                  <FormControl fullWidth>
-                    <InputLabel id="vehicle-make-label">Vehicle Make</InputLabel>
-                    <Select
-                      labelId="vehicle-make-label"
-                      id="vehicle-make"
-                      value={selectedMake}
-                      label="Vehicle Make"
-                      onChange={handleMakeChange}
-                    >
-                      <MenuItem value="all">All Makes</MenuItem>
-                      {allMakes.map((make) => (
-                        <MenuItem key={make} value={make}>{make}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                  
-                <Grid item xs={12} sm={6} md={6}>
-                  <Typography id="price-range-slider" gutterBottom>
-                    Monthly Payment
-                  </Typography>
-                  <Box sx={{ px: 1 }}>
-                    <Slider
-                      value={priceRange}
-                      onChange={handlePriceChange}
-                      valueLabelDisplay="auto"
-                      min={minPrice}
-                      max={maxPrice}
-                      step={50}
-                      marks={[
-                        { value: minPrice, label: `$${minPrice}` },
-                        { value: maxPrice, label: `$${maxPrice}` }
-                      ]}
-                      valueLabelFormat={(value) => `$${value}`}
-                      aria-labelledby="price-range-slider"
-                    />
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                    <Typography variant="body2">${priceRange[0]}</Typography>
-                    <Typography variant="body2">${priceRange[1]}</Typography>
-                  </Box>
-                </Grid>
-                
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 500, mb: 1 }}>
-                    Features
-                  </Typography>
-                  <Paper 
-                    variant="outlined" 
-                    sx={{ 
-                      p: 2, 
-                      borderRadius: 2,
-                      backgroundColor: 'white',
-                      display: 'flex', 
-                      flexWrap: 'wrap', 
-                      gap: 0.8,
-                      minHeight: '80px',
-                      alignContent: 'flex-start'
-                    }}
-                  >
-                    {allTags.map((tag) => (
-                      <Chip
-                        key={tag}
-                        label={tag}
-                        onClick={() => handleTagToggle(tag)}
-                        color={selectedTags.includes(tag) ? "primary" : "default"}
-                        variant={selectedTags.includes(tag) ? "filled" : "outlined"}
-                        size="medium"
-                        sx={{ 
-                          m: 0.5,
-                          borderRadius: '16px',
-                          transition: 'all 0.2s',
-                          '&:hover': {
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                            transform: 'translateY(-1px)'
-                          }
-                        }}
-                      />
-                    ))}
-                  </Paper>
-                </Grid>
-              </Grid>
-              
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {filteredDeals.length} {filteredDeals.length === 1 ? 'Deal' : 'Deals'} matching your filters
+        )}
+        
+        {error && !loading && (
+          <Alert severity="error" sx={{ my: 4 }}>
+            {error}
+          </Alert>
+        )}
+        
+        {!loading && !error && (
+          <>
+            {/* Filters Section */}
+            <Paper 
+              elevation={2} 
+              sx={{ 
+                mb: 4, 
+                borderRadius: 2,
+                overflow: 'hidden'
+              }}
+            >
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  alignItems: 'center', 
+                  p: 2,
+                  backgroundColor: '#808080',
+                  color: 'white',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onClick={() => setFiltersExpanded(prev => !prev)}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <FilterAltIcon sx={{ mr: 1 }} />
+                  <Typography variant="h6" component="h2" sx={{ fontWeight: 500 }}>
+                    Filter Deals
                   </Typography>
                 </Box>
-                <Button 
-                  variant="outlined" 
-                  onClick={resetFilters} 
-                  sx={{ 
-                    color: 'white',
-                    backgroundColor: "red",
-                    borderColor: '#1dacf0', 
+                <IconButton 
+                  sx={{ color: 'white' }}
+                  size="small"
+                >
+                  {filtersExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </IconButton>
+              </Box>
+              
+              <Collapse in={filtersExpanded}>
+                <Box sx={{ p: 3, backgroundColor: '#f8f8f8' }}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={6} md={6}>
+                      <FormControl fullWidth>
+                        <InputLabel id="vehicle-make-label">Vehicle Make</InputLabel>
+                        <Select
+                          labelId="vehicle-make-label"
+                          id="vehicle-make"
+                          value={selectedMake}
+                          label="Vehicle Make"
+                          onChange={handleMakeChange}
+                        >
+                          <MenuItem value="all">All Makes</MenuItem>
+                          {allMakes.map((make) => (
+                            <MenuItem key={make} value={make}>{make}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                      
+                    <Grid item xs={12} sm={6} md={6}>
+                      <Typography id="price-range-slider" gutterBottom>
+                        Monthly Payment
+                      </Typography>
+                      <Box sx={{ px: 1 }}>
+                        <Slider
+                          value={priceRange}
+                          onChange={handlePriceChange}
+                          valueLabelDisplay="auto"
+                          min={minPrice}
+                          max={maxPrice}
+                          step={50}
+                          marks={[
+                            { value: minPrice, label: `$${minPrice}` },
+                            { value: maxPrice, label: `$${maxPrice}` }
+                          ]}
+                          valueLabelFormat={(value) => `$${value}`}
+                          aria-labelledby="price-range-slider"
+                        />
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                        <Typography variant="body2">${priceRange[0]}</Typography>
+                        <Typography variant="body2">${priceRange[1]}</Typography>
+                      </Box>
+                    </Grid>
                     
-                  }}
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 500, mb: 1 }}>
+                        Features
+                      </Typography>
+                      <Paper 
+                        variant="outlined" 
+                        sx={{ 
+                          p: 2, 
+                          borderRadius: 2,
+                          backgroundColor: 'white',
+                          display: 'flex', 
+                          flexWrap: 'wrap', 
+                          gap: 0.8,
+                          minHeight: '80px',
+                          alignContent: 'flex-start'
+                        }}
+                      >
+                        {allTags.map((tag) => (
+                          <Chip
+                            key={tag}
+                            label={tag}
+                            onClick={() => handleTagToggle(tag)}
+                            color={selectedTags.includes(tag) ? "primary" : "default"}
+                            variant={selectedTags.includes(tag) ? "filled" : "outlined"}
+                            size="medium"
+                            sx={{ 
+                              m: 0.5,
+                              borderRadius: '16px',
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                transform: 'translateY(-1px)'
+                              }
+                            }}
+                          />
+                        ))}
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        {filteredDeals.length} {filteredDeals.length === 1 ? 'Deal' : 'Deals'} matching your filters
+                      </Typography>
+                    </Box>
+                    <Button 
+                      variant="outlined" 
+                      onClick={resetFilters} 
+                      sx={{ 
+                        color: 'white',
+                        backgroundColor: "red",
+                        borderColor: '#1dacf0', 
+                        
+                      }}
+                    >
+                      Reset Filters
+                    </Button>
+                  </Box>
+                </Box>
+              </Collapse>
+            </Paper>
+            
+            {/* Results count */}
+            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h6">
+                {filteredDeals.length} {filteredDeals.length === 1 ? 'Deal' : 'Deals'} Found
+              </Typography>
+            </Box>
+            
+            {/* Deals Grid */}
+            {filteredDeals.length > 0 ? (
+              <Grid container spacing={4}>
+                {filteredDeals.map((deal) => (
+                  <Grid item xs={12} sm={6} md={4} lg={3} key={deal.id}>
+                    <DealCard deal={deal} onDealClick={handleDealClick} />
+                  </Grid>
+                ))}
+              </Grid>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 5 }}>
+                <Typography variant="h5" color="text.secondary" gutterBottom>
+                  No deals match your filters
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  onClick={resetFilters}
+                  sx={{ mt: 2 }}
                 >
                   Reset Filters
                 </Button>
               </Box>
+            )}
+            
+            {/* Call to Action */}
+            <Box sx={{ textAlign: 'center', mt: 6, mb: 4 }}>
+              <Typography variant="h4" gutterBottom>
+                Looking for something specific?
+              </Typography>
+              <Typography variant="body1" paragraph sx={{ maxWidth: 700, mx: 'auto', mb: 3 }}>
+                We can help you find the perfect vehicle at the best possible price. 
+                Our team has access to exclusive deals and can negotiate on your behalf.
+              </Typography>
+              <Button 
+                variant="contained" 
+                size="large"
+                component={RouterLink}
+                to={{
+                  pathname: "/",
+                  hash: "lease-sell-form"
+                }}
+                state={{ selectedForm: "consultation" }}
+                sx={{ 
+                  px: 4,
+                  py: 1.5,
+                  bgcolor: '#323435',
+                  '&:hover': {
+                    bgcolor: '#1dacf0',
+                  }
+                }}
+              >
+                Contact Us Now
+              </Button>
             </Box>
-          </Collapse>
-        </Paper>
-        
-        {/* Results count */}
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6">
-            {filteredDeals.length} {filteredDeals.length === 1 ? 'Deal' : 'Deals'} Found
-          </Typography>
-          {/* {!filtersExpanded && (
-            <Button
-              startIcon={<FilterAltIcon />}
-              onClick={() => setFiltersExpanded(true)}
-              variant="outlined"
-              size="small"
-              sx={{ 
-                color: '#1dacf0',
-                borderColor: '#1dacf0', 
-                '&:hover': { 
-                  borderColor: '#1789c2',
-                  backgroundColor: 'rgba(29, 172, 240, 0.08)'
-                } 
-              }}
-            >
-              Show Filters
-            </Button>
-          )} */}
-        </Box>
-        
-        {/* Deals Grid */}
-        {filteredDeals.length > 0 ? (
-          <Grid container spacing={4}>
-            {filteredDeals.map((deal) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={deal.id}>
-                <DealCard deal={deal} onDealClick={handleDealClick} />
-              </Grid>
-            ))}
-          </Grid>
-        ) : (
-          <Box sx={{ textAlign: 'center', py: 5 }}>
-            <Typography variant="h5" color="text.secondary" gutterBottom>
-              No deals match your filters
-            </Typography>
-            <Button 
-              variant="contained" 
-              onClick={resetFilters}
-              sx={{ mt: 2 }}
-            >
-              Reset Filters
-            </Button>
-          </Box>
+          </>
         )}
-        
-        {/* Call to Action */}
-        <Box sx={{ textAlign: 'center', mt: 6, mb: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            Looking for something specific?
-          </Typography>
-          <Typography variant="body1" paragraph sx={{ maxWidth: 700, mx: 'auto', mb: 3 }}>
-            We can help you find the perfect vehicle at the best possible price. 
-            Our team has access to exclusive deals and can negotiate on your behalf.
-          </Typography>
-          <Button 
-            variant="contained" 
-            size="large"
-            component={RouterLink}
-            to={{
-              pathname: "/",
-              hash: "lease-sell-form"
-            }}
-            state={{ selectedForm: "consultation" }}
-            sx={{ 
-              px: 4,
-              py: 1.5,
-              bgcolor: '#323435',
-              '&:hover': {
-                bgcolor: '#1dacf0',
-              }
-            }}
-          >
-            Contact Us Now
-          </Button>
-        </Box>
       </Container>
 
       {/* Detail Dialog with Contact Form */}
@@ -434,7 +465,7 @@ const DealsPage: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <Box 
                     component="img" 
-                    src={selectedDeal.image} 
+                    src={selectedDeal.image_url} 
                     alt={`${selectedDeal.year} ${selectedDeal.make} ${selectedDeal.model}`} 
                     sx={{ 
                       width: '100%', 
@@ -447,7 +478,7 @@ const DealsPage: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold', mb: 1 }}>
-                      ${selectedDeal.leasePrice}/month
+                      ${selectedDeal.lease_price}/month
                     </Typography>
                     <Grid container spacing={1}>
                       <Grid item xs={6}>
@@ -457,7 +488,7 @@ const DealsPage: React.FC = () => {
                       </Grid>
                       <Grid item xs={6}>
                         <Typography variant="body2">
-                          <strong>Down:</strong> ${selectedDeal.downPayment.toLocaleString()}
+                          <strong>Down:</strong> ${selectedDeal.down_payment.toLocaleString()}
                         </Typography>
                       </Grid>
                       <Grid item xs={6}>

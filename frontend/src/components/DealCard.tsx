@@ -39,7 +39,7 @@ const DealCard: React.FC<DealCardProps> = ({ deal, onDealClick }) => {
         <CardMedia
           component="img"
           height="200"
-          image={deal.image}
+          image={deal.image_url}
           alt={`${deal.year} ${deal.make} ${deal.model}`}
         />
         {deal.savings && (
@@ -60,60 +60,60 @@ const DealCard: React.FC<DealCardProps> = ({ deal, onDealClick }) => {
         )}
       </Box>
       
-      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-        <Typography gutterBottom variant="h6" component="h2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-          {deal.year} {deal.make}
-        </Typography>
-        
-        <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
-          {deal.model}
-        </Typography>
-        
-        {deal.tags && deal.tags.length > 0 && (
-          <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
-            {deal.tags.map((tag, index) => (
-              <Chip 
-                key={index} 
-                label={tag} 
-                size="small" 
-                color={tag === 'Featured' || tag === 'Limited' ? 'primary' : 'default'} 
-              />
-            ))}
-          </Stack>
-        )}
-        
-        <Divider sx={{ my: 1.5 }} />
-        
-        <Box sx={{ mt: 'auto' }}>
+      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography gutterBottom variant="h6" component="h2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+            {deal.year} {deal.make}
+          </Typography>
+          
+          <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
+            {deal.model}
+          </Typography>
+          
+          {deal.tags && deal.tags.length > 0 && (
+            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
+              {deal.tags.map((tag, index) => (
+                <Chip 
+                  key={index} 
+                  label={tag} 
+                  size="small" 
+                  color={tag === 'Featured' || tag === 'Limited' ? 'primary' : 'default'} 
+                />
+              ))}
+            </Stack>
+          )}
+          
+          <Divider sx={{ my: 1.5 }} />
+          
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <Typography variant="body2" color="text.secondary">MSRP:</Typography>
-            <Typography variant="body2" sx={{ }}>${deal.msrp.toLocaleString()}</Typography>
+            <Typography variant="body2">${deal.msrp.toLocaleString()}</Typography>
           </Box>
           
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" color="primary" fontWeight="bold">${deal.leasePrice}/mo</Typography>
+            <Typography variant="h6" color="primary" fontWeight="bold">${deal.lease_price}/mo</Typography>
             <Typography variant="body2">
-              {deal.term} months | ${deal.downPayment.toLocaleString()} down
+              {deal.term} months | ${deal.down_payment.toLocaleString()} down
             </Typography>
           </Box>
-          
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Button 
-              variant="contained" 
-              onClick={handleClick}
-              sx={{ 
-                mt: 1,
-                px: 4,
-                width: '75%',
-                bgcolor: '#1dacf0',
-                '&:hover': {
-                  bgcolor: '#1789c2',
-                }
-              }}
-            >
-              Get This Deal
-            </Button>
-          </Box>
+        </Box>
+        
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Button 
+            variant="contained" 
+            onClick={handleClick}
+            sx={{ 
+              mt: 1,
+              px: 4,
+              width: '75%',
+              bgcolor: '#1dacf0',
+              '&:hover': {
+                bgcolor: '#1789c2',
+              }
+            }}
+          >
+            Get This Deal
+          </Button>
         </Box>
       </CardContent>
     </Card>

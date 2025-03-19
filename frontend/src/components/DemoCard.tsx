@@ -39,7 +39,7 @@ const DemoCard: React.FC<DemoCardProps> = ({ demo, onDemoClick }) => {
         <CardMedia
           component="img"
           height="200"
-          image={demo.image}
+          image={demo.image_url}
           alt={`${demo.year} ${demo.make} ${demo.model}`}
         />
         {demo.savings && (
@@ -60,60 +60,60 @@ const DemoCard: React.FC<DemoCardProps> = ({ demo, onDemoClick }) => {
         )}
       </Box>
       
-      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-        <Typography gutterBottom variant="h6" component="h2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-          {demo.year} {demo.make}
-        </Typography>
-        
-        <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
-          {demo.model}
-        </Typography>
-        
-        {demo.tags && demo.tags.length > 0 && (
-          <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
-            {demo.tags.map((tag, index) => (
-              <Chip 
-                key={index} 
-                label={tag} 
-                size="small" 
-                color={tag === 'Featured' || tag === 'Limited' ? 'primary' : 'default'} 
-              />
-            ))}
-          </Stack>
-        )}
-        
-        <Divider sx={{ my: 1.5 }} />
-        
-        <Box sx={{ mt: 'auto' }}>
+      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography gutterBottom variant="h6" component="h2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+            {demo.year} {demo.make}
+          </Typography>
+          
+          <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
+            {demo.model}
+          </Typography>
+          
+          {demo.tags && demo.tags.length > 0 && (
+            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
+              {demo.tags.map((tag, index) => (
+                <Chip 
+                  key={index} 
+                  label={tag} 
+                  size="small" 
+                  color={tag === 'Featured' || tag === 'Limited' ? 'primary' : 'default'} 
+                />
+              ))}
+            </Stack>
+          )}
+          
+          <Divider sx={{ my: 1.5 }} />
+          
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <Typography variant="body2" color="text.secondary">MSRP:</Typography>
-            <Typography variant="body2" sx={{ }}>${demo.msrp.toLocaleString()}</Typography>
+            <Typography variant="body2">${demo.msrp.toLocaleString()}</Typography>
           </Box>
           
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" color="primary" fontWeight="bold">${demo.leasePrice}/mo</Typography>
+            <Typography variant="h6" color="primary" fontWeight="bold">${demo.lease_price}/mo</Typography>
             <Typography variant="body2">
-              {demo.term} months | ${demo.downPayment.toLocaleString()} down
+              {demo.term} months | ${demo.down_payment.toLocaleString()} down
             </Typography>
           </Box>
-          
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Button 
-              variant="contained" 
-              onClick={handleClick}
-              sx={{ 
-                mt: 1,
-                px: 4,
-                width: '75%',
-                bgcolor: '#1dacf0',
-                '&:hover': {
-                  bgcolor: '#1789c2',
-                }
-              }}
-            >
-              Book a Demo
-            </Button>
-          </Box>
+        </Box>
+        
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Button 
+            variant="contained" 
+            onClick={handleClick}
+            sx={{ 
+              mt: 1,
+              px: 4,
+              width: '75%',
+              bgcolor: '#1dacf0',
+              '&:hover': {
+                bgcolor: '#1789c2',
+              }
+            }}
+          >
+            Book a Demo
+          </Button>
         </Box>
       </CardContent>
     </Card>

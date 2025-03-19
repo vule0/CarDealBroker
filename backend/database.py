@@ -73,6 +73,53 @@ class SellFormSubmission(Base):
     two_keys = Column(Boolean, default=False)
     major_damage = Column(Boolean, default=False)
 
+class ConsultationFormSubmission(Base):
+    __tablename__ = "consultation_form_submissions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    first_name = Column(String(100))
+    last_name = Column(String(100))
+    email = Column(String(100))
+    phone_number = Column(String(20))
+    zip_code = Column(String(20))
+
+class Deal(Base):
+    __tablename__ = "deals"
+
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    make = Column(String(100))
+    model = Column(String(100))
+    year = Column(Integer)
+    image_url = Column(String(255))
+    lease_price = Column(Float)
+    term = Column(Integer)
+    down_payment = Column(Float)
+    mileage = Column(Integer)
+    msrp = Column(Float)
+    savings = Column(Float, nullable=True)
+    tags = Column(String(255), nullable=True)  # Store as comma-separated values
+    description = Column(Text, nullable=True)
+
+class Demo(Base):
+    __tablename__ = "demos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    make = Column(String(100))
+    model = Column(String(100))
+    year = Column(Integer)
+    image_url = Column(String(255))
+    lease_price = Column(Float)
+    term = Column(Integer)
+    down_payment = Column(Float)
+    mileage = Column(Integer)
+    msrp = Column(Float)
+    savings = Column(Float, nullable=True)
+    tags = Column(String(255), nullable=True)  # Store as comma-separated values
+    description = Column(Text, nullable=True)
+
 # Function to get DB session
 def get_db():
     db = SessionLocal()

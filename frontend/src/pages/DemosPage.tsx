@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { 
   Box, 
   Container, 
@@ -22,26 +22,18 @@ import {
   Stack,
   Alert,
   Snackbar,
-  Collapse
+  Collapse,
+  CircularProgress
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import DemoCard from "../components/DemoCard";
-import { Demo, sampleDemos } from "../types/demos";
+import { Demo } from "../types/demos";
 import CloseIcon from '@mui/icons-material/Close';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ScrollToTop from "../components/ScrollToTop";
-
-// Extract all unique tags from sample demos
-const allTags = Array.from(
-  new Set(sampleDemos.flatMap(demo => demo.tags || []))
-).sort();
-
-// Extract all unique makes from sample demos
-const allMakes = Array.from(
-  new Set(sampleDemos.map(demo => demo.make))
-).sort();
+import api from "../api.ts";
 
 // Contact form initial state
 interface ContactFormData {
@@ -59,6 +51,9 @@ const initialFormData: ContactFormData = {
 };
 
 const DemosPage: React.FC = () => {
+  const [demos, setDemos] = useState<Demo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedDemo, setSelectedDemo] = useState<Demo | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
@@ -73,8 +68,45 @@ const DemosPage: React.FC = () => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   
-  const minPrice = 0;
-  const maxPrice = Math.max(...sampleDemos.map(demo => demo.leasePrice)) + 100;
+  // Extract unique tags and makes from demos
+  const allTags = useMemo(() => {
+    const tags = demos.flatMap(demo => demo.tags || []);
+    return Array.from(new Set(tags)).sort();
+  }, [demos]);
+  
+  const allMakes = useMemo(() => {
+    const makes = demos.map(demo => demo.make);
+    return Array.from(new Set(makes)).sort();
+  }, [demos]);
+  
+  // Calculate min and max price for the slider
+  const minPrice = useMemo(() => 0, []);
+  const maxPrice = useMemo(() => {
+    if (demos.length === 0) return 1000;
+    return Math.max(...demos.map(demo => demo.lease_price)) + 100;
+  }, [demos]);
+  
+  useEffect(() => {
+    const fetchDemos = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/demos/');
+        setDemos(response.data);
+        // Initialize price range based on actual data
+        if (response.data.length > 0) {
+          const max = Math.max(...response.data.map((demo: Demo) => demo.lease_price)) + 100;
+          setPriceRange([0, max]);
+        }
+      } catch (err) {
+        console.error('Error fetching demos:', err);
+        setError('Failed to load demos. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchDemos();
+  }, []);
 
   const handleDemoClick = (demo: Demo) => {
     setSelectedDemo(demo);
@@ -144,14 +176,14 @@ const DemosPage: React.FC = () => {
 
   // Filter demos based on selected filters
   const filteredDemos = useMemo(() => {
-    return sampleDemos.filter(demo => {
+    return demos.filter(demo => {
       // Filter by vehicle make
       if (selectedMake !== 'all' && demo.make !== selectedMake) {
         return false;
       }
       
       // Filter by price range
-      if (demo.leasePrice < priceRange[0] || demo.leasePrice > priceRange[1]) {
+      if (demo.lease_price < priceRange[0] || demo.lease_price > priceRange[1]) {
         return false;
       }
       
@@ -164,7 +196,7 @@ const DemosPage: React.FC = () => {
       
       return true;
     });
-  }, [selectedMake, priceRange, selectedTags]);
+  }, [selectedMake, priceRange, selectedTags, demos]);
 
   return (
     <Box sx={{ padding: 2, marginTop: 8 }}>
@@ -173,213 +205,230 @@ const DemosPage: React.FC = () => {
         <Typography variant="h2" component="h1" gutterBottom align="center" sx={{ fontWeight: 600, mb: 4 }}>
           Featured Demos
         </Typography>
-        
-        {/* Filters Section */}
-        <Paper 
-          elevation={2} 
-          sx={{ 
-            mb: 4, 
-            borderRadius: 2,
-            overflow: 'hidden'
-          }}
-        >
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between',
-              alignItems: 'center', 
-              p: 2,
-              backgroundColor: '#808080',
-              color: 'white',
-              cursor: 'pointer',
-              transition: 'background-color 0.2s'
-            }}
-            onClick={() => setFiltersExpanded(prev => !prev)}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <FilterAltIcon sx={{ mr: 1 }} />
-              <Typography variant="h6" component="h2" sx={{ fontWeight: 500 }}>
-                Filter Demos
-              </Typography>
-            </Box>
-            <IconButton 
-              sx={{ color: 'white' }}
-              size="small"
-            >
-              {filtersExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </IconButton>
+
+        {/* Loading and Error States */}
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}>
+            <CircularProgress size={60} />
           </Box>
-          
-          <Collapse in={filtersExpanded}>
-            <Box sx={{ p: 3, backgroundColor: '#f8f8f8' }}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6} md={6}>
-                  <FormControl fullWidth>
-                    <InputLabel id="vehicle-make-label">Vehicle Make</InputLabel>
-                    <Select
-                      labelId="vehicle-make-label"
-                      id="vehicle-make"
-                      value={selectedMake}
-                      label="Vehicle Make"
-                      onChange={handleMakeChange}
-                    >
-                      <MenuItem value="all">All Makes</MenuItem>
-                      {allMakes.map((make) => (
-                        <MenuItem key={make} value={make}>{make}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                  
-                <Grid item xs={12} sm={6} md={6}>
-                  <Typography id="price-range-slider" gutterBottom>
-                    Monthly Payment
-                  </Typography>
-                  <Box sx={{ px: 1 }}>
-                    <Slider
-                      value={priceRange}
-                      onChange={handlePriceChange}
-                      valueLabelDisplay="auto"
-                      min={minPrice}
-                      max={maxPrice}
-                      step={50}
-                      marks={[
-                        { value: minPrice, label: `$${minPrice}` },
-                        { value: maxPrice, label: `$${maxPrice}` }
-                      ]}
-                      valueLabelFormat={(value) => `$${value}`}
-                      aria-labelledby="price-range-slider"
-                    />
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                    <Typography variant="body2">${priceRange[0]}</Typography>
-                    <Typography variant="body2">${priceRange[1]}</Typography>
-                  </Box>
-                </Grid>
-                
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 500, mb: 1 }}>
-                    Features
-                  </Typography>
-                  <Paper 
-                    variant="outlined" 
-                    sx={{ 
-                      p: 2, 
-                      borderRadius: 2,
-                      backgroundColor: 'white',
-                      display: 'flex', 
-                      flexWrap: 'wrap', 
-                      gap: 0.8,
-                      minHeight: '80px',
-                      alignContent: 'flex-start'
-                    }}
-                  >
-                    {allTags.map((tag) => (
-                      <Chip
-                        key={tag}
-                        label={tag}
-                        onClick={() => handleTagToggle(tag)}
-                        color={selectedTags.includes(tag) ? "primary" : "default"}
-                        variant={selectedTags.includes(tag) ? "filled" : "outlined"}
-                        size="medium"
-                        sx={{ 
-                          m: 0.5,
-                          borderRadius: '16px',
-                          transition: 'all 0.2s',
-                          '&:hover': {
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                            transform: 'translateY(-1px)'
-                          }
-                        }}
-                      />
-                    ))}
-                  </Paper>
-                </Grid>
-              </Grid>
-              
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {filteredDemos.length} {filteredDemos.length === 1 ? 'Demo' : 'Demos'} matching your filters
+        )}
+        
+        {error && !loading && (
+          <Alert severity="error" sx={{ my: 4 }}>
+            {error}
+          </Alert>
+        )}
+        
+        {!loading && !error && (
+          <>
+            {/* Filters Section */}
+            <Paper 
+              elevation={2} 
+              sx={{ 
+                mb: 4, 
+                borderRadius: 2,
+                overflow: 'hidden'
+              }}
+            >
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  alignItems: 'center', 
+                  p: 2,
+                  backgroundColor: '#808080',
+                  color: 'white',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onClick={() => setFiltersExpanded(prev => !prev)}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <FilterAltIcon sx={{ mr: 1 }} />
+                  <Typography variant="h6" component="h2" sx={{ fontWeight: 500 }}>
+                    Filter Demos
                   </Typography>
                 </Box>
+                <IconButton 
+                  sx={{ color: 'white' }}
+                  size="small"
+                >
+                  {filtersExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </IconButton>
+              </Box>
+              
+              <Collapse in={filtersExpanded}>
+                <Box sx={{ p: 3, backgroundColor: '#f8f8f8' }}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={6} md={6}>
+                      <FormControl fullWidth>
+                        <InputLabel id="vehicle-make-label">Vehicle Make</InputLabel>
+                        <Select
+                          labelId="vehicle-make-label"
+                          id="vehicle-make"
+                          value={selectedMake}
+                          label="Vehicle Make"
+                          onChange={handleMakeChange}
+                        >
+                          <MenuItem value="all">All Makes</MenuItem>
+                          {allMakes.map((make) => (
+                            <MenuItem key={make} value={make}>{make}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                      
+                    <Grid item xs={12} sm={6} md={6}>
+                      <Typography id="price-range-slider" gutterBottom>
+                        Monthly Payment
+                      </Typography>
+                      <Box sx={{ px: 1 }}>
+                        <Slider
+                          value={priceRange}
+                          onChange={handlePriceChange}
+                          valueLabelDisplay="auto"
+                          min={minPrice}
+                          max={maxPrice}
+                          step={50}
+                          marks={[
+                            { value: minPrice, label: `$${minPrice}` },
+                            { value: maxPrice, label: `$${maxPrice}` }
+                          ]}
+                          valueLabelFormat={(value) => `$${value}`}
+                          aria-labelledby="price-range-slider"
+                        />
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                        <Typography variant="body2">${priceRange[0]}</Typography>
+                        <Typography variant="body2">${priceRange[1]}</Typography>
+                      </Box>
+                    </Grid>
+                    
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 500, mb: 1 }}>
+                        Features
+                      </Typography>
+                      <Paper 
+                        variant="outlined" 
+                        sx={{ 
+                          p: 2, 
+                          borderRadius: 2,
+                          backgroundColor: 'white',
+                          display: 'flex', 
+                          flexWrap: 'wrap', 
+                          gap: 0.8,
+                          minHeight: '80px',
+                          alignContent: 'flex-start'
+                        }}
+                      >
+                        {allTags.map((tag) => (
+                          <Chip
+                            key={tag}
+                            label={tag}
+                            onClick={() => handleTagToggle(tag)}
+                            color={selectedTags.includes(tag) ? "primary" : "default"}
+                            variant={selectedTags.includes(tag) ? "filled" : "outlined"}
+                            size="medium"
+                            sx={{ 
+                              m: 0.5,
+                              borderRadius: '16px',
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                transform: 'translateY(-1px)'
+                              }
+                            }}
+                          />
+                        ))}
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        {filteredDemos.length} {filteredDemos.length === 1 ? 'Demo' : 'Demos'} matching your filters
+                      </Typography>
+                    </Box>
+                    <Button 
+                      variant="outlined" 
+                      onClick={resetFilters} 
+                      sx={{ 
+                        color: 'white',
+                        backgroundColor: "red",
+                        borderColor: '#1dacf0', 
+                      }}
+                    >
+                      Reset Filters
+                    </Button>
+                  </Box>
+                </Box>
+              </Collapse>
+            </Paper>
+            
+            {/* Results count */}
+            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h6">
+                {filteredDemos.length} {filteredDemos.length === 1 ? 'Demo' : 'Demos'} Found
+              </Typography>
+            </Box>
+            
+            {/* Demos Grid */}
+            {filteredDemos.length > 0 ? (
+              <Grid container spacing={4}>
+                {filteredDemos.map((demo) => (
+                  <Grid item xs={12} sm={6} md={4} lg={3} key={demo.id}>
+                    <DemoCard demo={demo} onDemoClick={handleDemoClick} />
+                  </Grid>
+                ))}
+              </Grid>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 5 }}>
+                <Typography variant="h5" color="text.secondary" gutterBottom>
+                  No demos match your filters
+                </Typography>
                 <Button 
-                  variant="outlined" 
-                  onClick={resetFilters} 
-                  sx={{ 
-                    color: 'white',
-                    backgroundColor: "red",
-                    borderColor: '#1dacf0', 
-                  }}
+                  variant="contained" 
+                  onClick={resetFilters}
+                  sx={{ mt: 2 }}
                 >
                   Reset Filters
                 </Button>
               </Box>
+            )}
+            
+            {/* Call to Action */}
+            <Box sx={{ textAlign: 'center', mt: 6, mb: 4 }}>
+              <Typography variant="h4" gutterBottom>
+                Looking for a specific demo vehicle?
+              </Typography>
+              <Typography variant="body1" paragraph sx={{ maxWidth: 700, mx: 'auto', mb: 3 }}>
+                We can help you find the perfect vehicle at the best possible price. 
+                Our team has access to exclusive demos and can arrange a customized experience for you.
+              </Typography>
+              <Button 
+                variant="contained" 
+                size="large"
+                component={RouterLink}
+                to={{
+                  pathname: "/",
+                  hash: "lease-sell-form"
+                }}
+                state={{ selectedForm: "consultation" }}
+                sx={{ 
+                  px: 4,
+                  py: 1.5,
+                  bgcolor: '#323435',
+                  '&:hover': {
+                    bgcolor: '#1dacf0',
+                  }
+                }}
+              >
+                Contact Us Now
+              </Button>
             </Box>
-          </Collapse>
-        </Paper>
-        
-        {/* Results count */}
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6">
-            {filteredDemos.length} {filteredDemos.length === 1 ? 'Demo' : 'Demos'} Found
-          </Typography>
-        </Box>
-        
-        {/* Demos Grid */}
-        {filteredDemos.length > 0 ? (
-          <Grid container spacing={4}>
-            {filteredDemos.map((demo) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={demo.id}>
-                <DemoCard demo={demo} onDemoClick={handleDemoClick} />
-              </Grid>
-            ))}
-          </Grid>
-        ) : (
-          <Box sx={{ textAlign: 'center', py: 5 }}>
-            <Typography variant="h5" color="text.secondary" gutterBottom>
-              No demos match your filters
-            </Typography>
-            <Button 
-              variant="contained" 
-              onClick={resetFilters}
-              sx={{ mt: 2 }}
-            >
-              Reset Filters
-            </Button>
-          </Box>
+          </>
         )}
-        
-        {/* Call to Action */}
-        <Box sx={{ textAlign: 'center', mt: 6, mb: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            Looking for a specific demo vehicle?
-          </Typography>
-          <Typography variant="body1" paragraph sx={{ maxWidth: 700, mx: 'auto', mb: 3 }}>
-            We can help you find the perfect vehicle at the best possible price. 
-            Our team has access to exclusive demos and can arrange a customized experience for you.
-          </Typography>
-          <Button 
-            variant="contained" 
-            size="large"
-            component={RouterLink}
-            to={{
-              pathname: "/",
-              hash: "lease-sell-form"
-            }}
-            state={{ selectedForm: "consultation" }}
-            sx={{ 
-              px: 4,
-              py: 1.5,
-              bgcolor: '#323435',
-              '&:hover': {
-                bgcolor: '#1dacf0',
-              }
-            }}
-          >
-            Contact Us Now
-          </Button>
-        </Box>
       </Container>
 
       {/* Detail Dialog with Contact Form */}
@@ -415,7 +464,7 @@ const DemosPage: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <Box 
                     component="img" 
-                    src={selectedDemo.image} 
+                    src={selectedDemo.image_url} 
                     alt={`${selectedDemo.year} ${selectedDemo.make} ${selectedDemo.model}`} 
                     sx={{ 
                       width: '100%', 
@@ -428,7 +477,7 @@ const DemosPage: React.FC = () => {
                 <Grid item xs={12} md={6}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold', mb: 1 }}>
-                      ${selectedDemo.leasePrice}/month
+                      ${selectedDemo.lease_price}/month
                     </Typography>
                     <Grid container spacing={1}>
                       <Grid item xs={6}>
@@ -438,7 +487,7 @@ const DemosPage: React.FC = () => {
                       </Grid>
                       <Grid item xs={6}>
                         <Typography variant="body2">
-                          <strong>Down:</strong> ${selectedDemo.downPayment.toLocaleString()}
+                          <strong>Down:</strong> ${selectedDemo.down_payment.toLocaleString()}
                         </Typography>
                       </Grid>
                       <Grid item xs={6}>
