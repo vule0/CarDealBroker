@@ -659,7 +659,7 @@ def send_vehicle_inquiry_email(inquiry_data: VehicleInquiryRequest):
     vehicle_type = inquiry_data.vehicleType.capitalize()
     subject = f"New {vehicle_type} Inquiry - {inquiry_data.vehicleYear} {inquiry_data.vehicleMake} {inquiry_data.vehicleModel}"
     
-    # Format tags as comma-separated string if present
+    # Format tags as comma-separated string if presentt
     tags_str = ", ".join(inquiry_data.tags) if inquiry_data.tags else "None"
     
     # Format the savings with commas if present
