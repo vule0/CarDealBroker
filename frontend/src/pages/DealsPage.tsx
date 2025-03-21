@@ -135,17 +135,53 @@ const DealsPage: React.FC = () => {
   
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would send the data to your backend here
-    console.log('Form submitted:', formData, 'Deal:', selectedDeal);
-    setFormSubmitted(true);
-    setSnackbarOpen(true);
     
-    // Reset form after successful submission
-    // setTimeout(() => {
-    //   setDialogOpen(false);
-    //   setShowContactForm(false);
-    //   setFormData(initialFormData);
-    // }, 2000);
+    if (!selectedDeal) return;
+    
+    // Prepare data to send to the backend
+    const inquiryData = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      phoneNumber: formData.phone,
+      vehicleType: 'deal',
+      vehicleId: selectedDeal.id,
+      vehicleYear: selectedDeal.year,
+      vehicleMake: selectedDeal.make,
+      vehicleModel: selectedDeal.model,
+      leasePrice: selectedDeal.lease_price,
+      term: selectedDeal.term,
+      downPayment: selectedDeal.down_payment,
+      mileage: selectedDeal.mileage,
+      msrp: selectedDeal.msrp,
+      savings: selectedDeal.savings,
+      tags: selectedDeal.tags,
+      description: selectedDeal.description
+    };
+    
+    // Send data to the backend
+    const submitInquiry = async () => {
+      try {
+        const response = await api.post('/vehicle_inquiry/', inquiryData);
+        console.log('Inquiry submitted successfully:', response.data);
+        
+        // Show success message
+        setFormSubmitted(true);
+        setSnackbarOpen(true);
+        
+        // Reset form after a delay
+        setTimeout(() => {
+          setDialogOpen(false);
+          setShowContactForm(false);
+          setFormData(initialFormData);
+        }, 3000);
+      } catch (err) {
+        console.error('Error submitting inquiry:', err);
+        // You could add error handling here, like showing an error message
+      }
+    };
+    
+    submitInquiry();
   };
   
   const handleSnackbarClose = () => {
@@ -533,7 +569,7 @@ const DealsPage: React.FC = () => {
                       
                       {formSubmitted ? (
                         <Alert severity="success" sx={{ my: 1 }}>
-                          Thank you! Your information has been submitted. Our team will contact you shortly.
+                          Thank you for your interest in the {selectedDeal.year} {selectedDeal.make} {selectedDeal.model}! Our team will contact you shortly about this deal.
                         </Alert>
                       ) : (
                         <Stack spacing={2} sx={{ mt: 1 }}>
@@ -655,7 +691,7 @@ const DealsPage: React.FC = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
-          Your information has been submitted successfully!
+          {selectedDeal && `Your inquiry about the ${selectedDeal.year} ${selectedDeal.make} ${selectedDeal.model} has been submitted successfully!`}
         </Alert>
       </Snackbar>
     </Box>

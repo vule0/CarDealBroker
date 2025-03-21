@@ -76,6 +76,26 @@ class EmailRequest(BaseModel):
     twoKeys: Optional[bool] = None
     majorDamage: Optional[bool] = None
 
+# New model for vehicle inquiries from deal and demo pages
+class VehicleInquiryRequest(BaseModel):
+    firstName: str
+    lastName: str
+    email: str
+    phoneNumber: str
+    vehicleType: str  # 'deal' or 'demo'
+    vehicleId: int
+    vehicleYear: int
+    vehicleMake: str
+    vehicleModel: str
+    leasePrice: float
+    term: int
+    downPayment: float
+    mileage: int
+    msrp: float
+    savings: Optional[float] = None
+    tags: Optional[List[str]] = None
+    description: Optional[str] = None
+
 class SuccessResponse(BaseModel):
     status: str = "success"
     message: str
@@ -171,17 +191,23 @@ def send_email_sendgrid(email_data: EmailRequest):
     subject = f"New {email_data.formType} Submission - {email_data.firstName} {email_data.lastName}"
     
     email_body = f"""
+    Customer Information:
+    --------------------
     Name: {email_data.firstName} {email_data.lastName}
     Email: {email_data.email}
     Phone: {email_data.phoneNumber}
-    
     Form Type: {email_data.formType}
     """
     
     if email_data.formType.lower() == "lease form":
         email_body += f"""
-    Vehicle Make: {email_data.vehicleMake}
-    Vehicle Model: {email_data.vehicleModel}
+    Vehicle Information:
+    -------------------
+    Make: {email_data.vehicleMake}
+    Model: {email_data.vehicleModel}
+    
+    Lease Details:
+    -------------
     Zip Code: {email_data.zipCode}
     Miles per Year: {email_data.milesPerYear}
     Credit Score: {email_data.creditScore}
@@ -189,8 +215,13 @@ def send_email_sendgrid(email_data: EmailRequest):
 
     if email_data.formType.lower() == "sell form":
         email_body += f"""
+    Vehicle Information:
+    -------------------
     VIN: {email_data.vin}
     Miles: {email_data.miles}
+    
+    Sell Details:
+    ------------
     Payoff Amount: {email_data.payoff}
     Condition: {email_data.condition}
     Two Keys: {'Yes' if email_data.twoKeys else 'No'}
@@ -281,7 +312,7 @@ async def submit_form(email_data: EmailRequest, background_tasks: BackgroundTask
         db_success = save_form_to_db(email_data, db)
         
         # Send email
-        # background_tasks.add_task(send_email_sendgrid, email_data)
+        background_tasks.add_task(send_email_sendgrid, email_data)
         
         return SuccessResponse(
             message="Form submitted successfully. Data saved and email is being sent.",
@@ -618,3 +649,92 @@ async def delete_demo(demo_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to delete demo: {str(e)}")
+
+def send_vehicle_inquiry_email(inquiry_data: VehicleInquiryRequest):
+    """Send email for vehicle inquiry (deal or demo)"""
+    sg = sendgrid.SendGridAPIClient(api_key=os.getenv("SENDGRID_API_KEY"))
+    from_email = Email(os.getenv("SENDGRID_FROM_EMAIL"))
+    to_email = To(os.getenv("RECEIVER_EMAIL"))
+    
+    vehicle_type = inquiry_data.vehicleType.capitalize()
+    subject = f"New {vehicle_type} Inquiry - {inquiry_data.vehicleYear} {inquiry_data.vehicleMake} {inquiry_data.vehicleModel}"
+    
+    # Format tags as comma-separated string if present
+    tags_str = ", ".join(inquiry_data.tags) if inquiry_data.tags else "None"
+    
+    # Format the savings with commas if present
+    savings_str = f"${inquiry_data.savings:,.2f}" if inquiry_data.savings else "N/A"
+    
+    email_body = f"""
+    Customer Information:
+    --------------------
+    Name: {inquiry_data.firstName} {inquiry_data.lastName}
+    Email: {inquiry_data.email}
+    Phone: {inquiry_data.phoneNumber}
+    Inquiry Type: {vehicle_type}
+    
+    Vehicle Information:
+    -------------------
+    ID: {inquiry_data.vehicleId}
+    Year: {inquiry_data.vehicleYear}
+    Make: {inquiry_data.vehicleMake}
+    Model: {inquiry_data.vehicleModel}
+    
+    Lease Details:
+    -------------
+    Monthly Payment: ${inquiry_data.leasePrice:,.2f}
+    Term: {inquiry_data.term} months
+    Down Payment: ${inquiry_data.downPayment:,.2f}
+    Mileage: {inquiry_data.mileage:,}/year
+    MSRP: ${inquiry_data.msrp:,.2f}
+    Savings: {savings_str}
+    
+    Features: {tags_str}
+    """
+    
+    if inquiry_data.description:
+        email_body += f"""
+    Description:
+    -----------
+    {inquiry_data.description}
+    """
+    
+    content = Content("text/plain", email_body)
+    mail = Mail(from_email, to_email, subject, content)
+
+    try:
+        response = sg.send(mail)
+        if response.status_code == 202:
+            print(f"Vehicle inquiry email sent successfully with status code {response.status_code}")
+            return True
+        else:
+            print(f"Failed to send vehicle inquiry email with status code {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"Error sending vehicle inquiry email: {e}")
+        return False
+
+@app.post("/vehicle_inquiry/", response_model=SuccessResponse, responses={
+    200: {"model": SuccessResponse},
+    400: {"model": ErrorResponse},
+    500: {"model": ErrorResponse}
+})
+async def submit_vehicle_inquiry(inquiry_data: VehicleInquiryRequest, background_tasks: BackgroundTasks):
+    """
+    Handle vehicle inquiries from the deals and demos pages
+    """
+    try:
+        # Send email in the background
+        background_tasks.add_task(send_vehicle_inquiry_email, inquiry_data)
+        
+        return SuccessResponse(
+            message=f"{inquiry_data.vehicleType.capitalize()} inquiry submitted successfully. An email will be sent to our team.",
+            data={"vehicleType": inquiry_data.vehicleType, "vehicleId": inquiry_data.vehicleId}
+        )
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"An unexpected error occurred: {str(e)}"
+        )

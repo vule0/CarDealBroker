@@ -135,17 +135,53 @@ const DemosPage: React.FC = () => {
   
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would send the data to your backend here
-    console.log('Form submitted:', formData, 'Demo:', selectedDemo);
-    setFormSubmitted(true);
-    setSnackbarOpen(true);
     
-    // Reset form after successful submission
-    // setTimeout(() => {
-    //   setDialogOpen(false);
-    //   setShowContactForm(false);
-    //   setFormData(initialFormData);
-    // }, 2000);
+    if (!selectedDemo) return;
+    
+    // Prepare data to send to the backend
+    const inquiryData = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      phoneNumber: formData.phone,
+      vehicleType: 'demo',
+      vehicleId: selectedDemo.id,
+      vehicleYear: selectedDemo.year,
+      vehicleMake: selectedDemo.make,
+      vehicleModel: selectedDemo.model,
+      leasePrice: selectedDemo.lease_price,
+      term: selectedDemo.term,
+      downPayment: selectedDemo.down_payment,
+      mileage: selectedDemo.mileage,
+      msrp: selectedDemo.msrp,
+      savings: selectedDemo.savings,
+      tags: selectedDemo.tags,
+      description: selectedDemo.description
+    };
+    
+    // Send data to the backend
+    const submitInquiry = async () => {
+      try {
+        const response = await api.post('/vehicle_inquiry/', inquiryData);
+        console.log('Inquiry submitted successfully:', response.data);
+        
+        // Show success message
+        setFormSubmitted(true);
+        setSnackbarOpen(true);
+        
+        // Reset form after a delay
+        setTimeout(() => {
+          setDialogOpen(false);
+          setShowContactForm(false);
+          setFormData(initialFormData);
+        }, 3000);
+      } catch (err) {
+        console.error('Error submitting inquiry:', err);
+        // You could add error handling here, like showing an error message
+      }
+    };
+    
+    submitInquiry();
   };
   
   const handleSnackbarClose = () => {
@@ -532,7 +568,7 @@ const DemosPage: React.FC = () => {
                       
                       {formSubmitted ? (
                         <Alert severity="success" sx={{ my: 1 }}>
-                          Thank you! Your information has been submitted. Our team will contact you shortly.
+                          Thank you for your interest in the {selectedDemo.year} {selectedDemo.make} {selectedDemo.model}! Our team will contact you shortly about this demo vehicle.
                         </Alert>
                       ) : (
                         <Stack spacing={2} sx={{ mt: 1 }}>
@@ -654,7 +690,7 @@ const DemosPage: React.FC = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
-          Your information has been submitted successfully!
+          {selectedDemo && `Your inquiry about the ${selectedDemo.year} ${selectedDemo.make} ${selectedDemo.model} demo has been submitted successfully!`}
         </Alert>
       </Snackbar>
     </Box>
