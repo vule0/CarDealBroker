@@ -120,6 +120,46 @@ class Demo(Base):
     tags = Column(String(255), nullable=True)  # Store as comma-separated values
     description = Column(Text, nullable=True)
 
+class DealInquirySubmission(Base):
+    __tablename__ = "deal_inquiry_submissions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    first_name = Column(String(100))
+    last_name = Column(String(100))
+    email = Column(String(100))
+    phone_number = Column(String(20))
+    deal_id = Column(Integer)  # Reference to the deal
+    vehicle_year = Column(Integer)
+    vehicle_make = Column(String(100))
+    vehicle_model = Column(String(100))
+    lease_price = Column(Float)
+    term = Column(Integer)
+    down_payment = Column(Float)
+    mileage = Column(Integer)
+    msrp = Column(Float)
+    savings = Column(Float, nullable=True)
+
+class DemoInquirySubmission(Base):
+    __tablename__ = "demo_inquiry_submissions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    first_name = Column(String(100))
+    last_name = Column(String(100))
+    email = Column(String(100))
+    phone_number = Column(String(20))
+    demo_id = Column(Integer)  # Reference to the demo
+    vehicle_year = Column(Integer)
+    vehicle_make = Column(String(100))
+    vehicle_model = Column(String(100))
+    lease_price = Column(Float)
+    term = Column(Integer)
+    down_payment = Column(Float)
+    mileage = Column(Integer)
+    msrp = Column(Float)
+    savings = Column(Float, nullable=True)
+
 # Function to get DB session
 def get_db():
     db = SessionLocal()

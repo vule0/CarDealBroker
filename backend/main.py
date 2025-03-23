@@ -8,9 +8,10 @@ from sendgrid.helpers.mail import Mail, Email, To, Content
 from dotenv import load_dotenv
 from typing import Optional, List
 from sqlalchemy.orm import Session
+import datetime
 
 # Import database modules
-from database import get_db, init_db, LeaseFormSubmission, SellFormSubmission, ConsultationFormSubmission, Deal, Demo
+from database import get_db, init_db, LeaseFormSubmission, SellFormSubmission, ConsultationFormSubmission, Deal, Demo, DealInquirySubmission, DemoInquirySubmission
 from s3_utils import upload_file_to_s3
 
 load_dotenv()
@@ -180,6 +181,48 @@ class DemoResponse(BaseModel):
     savings: Optional[float] = None
     tags: Optional[list[str]] = None
     description: Optional[str] = None
+    
+    class Config:
+        orm_mode = True
+
+class DealInquiryResponse(BaseModel):
+    id: int
+    created_at: datetime.datetime
+    first_name: str
+    last_name: str
+    email: str
+    phone_number: str
+    deal_id: int
+    vehicle_year: int
+    vehicle_make: str
+    vehicle_model: str
+    lease_price: float
+    term: int
+    down_payment: float
+    mileage: int
+    msrp: float
+    savings: Optional[float] = None
+    
+    class Config:
+        orm_mode = True
+
+class DemoInquiryResponse(BaseModel):
+    id: int
+    created_at: datetime.datetime
+    first_name: str
+    last_name: str
+    email: str
+    phone_number: str
+    demo_id: int
+    vehicle_year: int
+    vehicle_make: str
+    vehicle_model: str
+    lease_price: float
+    term: int
+    down_payment: float
+    mileage: int
+    msrp: float
+    savings: Optional[float] = None
     
     class Config:
         orm_mode = True
@@ -650,6 +693,59 @@ async def delete_demo(demo_id: int, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to delete demo: {str(e)}")
 
+def save_vehicle_inquiry_to_db(inquiry_data: VehicleInquiryRequest, db: Session):
+    """Save vehicle inquiry to the appropriate database table"""
+    try:
+        if inquiry_data.vehicleType.lower() == "deal":
+            # Create a new deal inquiry submission
+            db_submission = DealInquirySubmission(
+                first_name=inquiry_data.firstName,
+                last_name=inquiry_data.lastName,
+                email=inquiry_data.email,
+                phone_number=inquiry_data.phoneNumber,
+                deal_id=inquiry_data.vehicleId,
+                vehicle_year=inquiry_data.vehicleYear,
+                vehicle_make=inquiry_data.vehicleMake,
+                vehicle_model=inquiry_data.vehicleModel,
+                lease_price=inquiry_data.leasePrice,
+                term=inquiry_data.term,
+                down_payment=inquiry_data.downPayment,
+                mileage=inquiry_data.mileage,
+                msrp=inquiry_data.msrp,
+                savings=inquiry_data.savings
+            )
+        elif inquiry_data.vehicleType.lower() == "demo":
+            # Create a new demo inquiry submission
+            db_submission = DemoInquirySubmission(
+                first_name=inquiry_data.firstName,
+                last_name=inquiry_data.lastName,
+                email=inquiry_data.email,
+                phone_number=inquiry_data.phoneNumber,
+                demo_id=inquiry_data.vehicleId,
+                vehicle_year=inquiry_data.vehicleYear,
+                vehicle_make=inquiry_data.vehicleMake,
+                vehicle_model=inquiry_data.vehicleModel,
+                lease_price=inquiry_data.leasePrice,
+                term=inquiry_data.term,
+                down_payment=inquiry_data.downPayment,
+                mileage=inquiry_data.mileage,
+                msrp=inquiry_data.msrp,
+                savings=inquiry_data.savings
+            )
+        else:
+            # Invalid vehicle type
+            print(f"Invalid vehicle type: {inquiry_data.vehicleType}")
+            return False
+            
+        db.add(db_submission)
+        db.commit()
+        db.refresh(db_submission)
+        return True
+    except Exception as e:
+        print(f"Error saving vehicle inquiry to database: {e}")
+        db.rollback()
+        return False
+
 def send_vehicle_inquiry_email(inquiry_data: VehicleInquiryRequest):
     """Send email for vehicle inquiry (deal or demo)"""
     sg = sendgrid.SendGridAPIClient(api_key=os.getenv("SENDGRID_API_KEY"))
@@ -719,17 +815,20 @@ def send_vehicle_inquiry_email(inquiry_data: VehicleInquiryRequest):
     400: {"model": ErrorResponse},
     500: {"model": ErrorResponse}
 })
-async def submit_vehicle_inquiry(inquiry_data: VehicleInquiryRequest, background_tasks: BackgroundTasks):
+async def submit_vehicle_inquiry(inquiry_data: VehicleInquiryRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """
     Handle vehicle inquiries from the deals and demos pages
     """
     try:
+        # Save to database
+        db_success = save_vehicle_inquiry_to_db(inquiry_data, db)
+        
         # Send email in the background
         background_tasks.add_task(send_vehicle_inquiry_email, inquiry_data)
         
         return SuccessResponse(
             message=f"{inquiry_data.vehicleType.capitalize()} inquiry submitted successfully. An email will be sent to our team.",
-            data={"vehicleType": inquiry_data.vehicleType, "vehicleId": inquiry_data.vehicleId}
+            data={"vehicleType": inquiry_data.vehicleType, "vehicleId": inquiry_data.vehicleId, "database_saved": db_success}
         )
     except HTTPException as he:
         raise he
@@ -738,3 +837,31 @@ async def submit_vehicle_inquiry(inquiry_data: VehicleInquiryRequest, background
             status_code=500,
             detail=f"An unexpected error occurred: {str(e)}"
         )
+
+@app.get("/deal_inquiries/", response_model=List[DealInquiryResponse])
+async def get_deal_inquiries(db: Session = Depends(get_db)):
+    """Get all deal inquiry submissions"""
+    inquiries = db.query(DealInquirySubmission).all()
+    return inquiries
+
+@app.get("/deal_inquiries/{inquiry_id}", response_model=DealInquiryResponse)
+async def get_deal_inquiry(inquiry_id: int, db: Session = Depends(get_db)):
+    """Get a specific deal inquiry submission by ID"""
+    inquiry = db.query(DealInquirySubmission).filter(DealInquirySubmission.id == inquiry_id).first()
+    if not inquiry:
+        raise HTTPException(status_code=404, detail="Deal inquiry not found")
+    return inquiry
+
+@app.get("/demo_inquiries/", response_model=List[DemoInquiryResponse])
+async def get_demo_inquiries(db: Session = Depends(get_db)):
+    """Get all demo inquiry submissions"""
+    inquiries = db.query(DemoInquirySubmission).all()
+    return inquiries
+
+@app.get("/demo_inquiries/{inquiry_id}", response_model=DemoInquiryResponse)
+async def get_demo_inquiry(inquiry_id: int, db: Session = Depends(get_db)):
+    """Get a specific demo inquiry submission by ID"""
+    inquiry = db.query(DemoInquirySubmission).filter(DemoInquirySubmission.id == inquiry_id).first()
+    if not inquiry:
+        raise HTTPException(status_code=404, detail="Demo inquiry not found")
+    return inquiry

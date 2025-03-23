@@ -534,7 +534,7 @@ const DealsPage: React.FC = () => {
                       </Grid>
                       <Grid item xs={6}>
                         <Typography variant="body2">
-                          <strong>MSRP:</strong> <span style={{textDecoration: 'line-through'}}>${selectedDeal.msrp.toLocaleString()}</span>
+                          <strong>MSRP:</strong> <span style={{}}>${selectedDeal.msrp.toLocaleString()}</span>
                         </Typography>
                       </Grid>
                     </Grid>

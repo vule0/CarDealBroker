@@ -89,8 +89,11 @@ const DemoCard: React.FC<DemoCardProps> = ({ demo, onDemoClick }) => {
             <Typography variant="body2" color="text.secondary">MSRP:</Typography>
             <Typography variant="body2" sx={{ }}>${demo.msrp.toLocaleString()}</Typography>
           </Box>
-          
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+            <Typography variant="body2" color="text.secondary">Mileage:</Typography>
+            <Typography variant="body2">{demo.mileage.toLocaleString()}/yr</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
             <Typography variant="h6" color="primary" fontWeight="bold">${demo.lease_price}/mo</Typography>
             <Typography variant="body2">
               {demo.term} months | ${demo.down_payment.toLocaleString()} down
